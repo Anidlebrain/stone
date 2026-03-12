@@ -1,0 +1,28 @@
+# 忽略缓存目录
+poke_cache/
+data/
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+#
+*.csv
+
+
+# 虚拟环境
+venv/
+.env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# Git 相关（一般不会进仓库，但写上更安全）
+.git/

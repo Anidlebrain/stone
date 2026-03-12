@@ -1,0 +1,2 @@
+wins=9694 ties=26 losses=280 win_rate=0.969400
+strategy: 0 0 20 0 0 24 0 0 28 28

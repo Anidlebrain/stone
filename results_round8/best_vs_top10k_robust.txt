@@ -1,0 +1,5 @@
+strategy: 0 1 17 18 19 0 21 0 24 0
+train=1981 4 15
+valid=1991 0 9
+full=9932 8 60
+full_win_rate=0.993200

@@ -1,0 +1,16 @@
+=== BEST ROUND 5 SEARCH RESULT ===
+seed_family = 前面模拟的1W名
+strategy = [9, 11, 13, 12, 15, 0, 0, 0, 20, 20]
+sum = 100
+
+=== DURING SEARCH (sampled elite pool) ===
+wins = 2276
+ties = 23
+losses = 201
+win_rate = 0.910400
+
+=== FINAL EVAL (full top10k if available) ===
+wins = 9120
+ties = 70
+losses = 810
+win_rate = 0.912000
