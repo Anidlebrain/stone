@@ -39,6 +39,7 @@ TOTAL = 100
 K = 10
 GROUPS = 5
 MIN_EACH = 2
+PILE10_MIN = 35
 REST = TOTAL - K * MIN_EACH
 
 # all 126 possible 5-group positive compositions of 10
@@ -117,6 +118,7 @@ def is_legal_round10(v: np.ndarray) -> bool:
     return bool(
         v.shape[0] == K and
         (v >= MIN_EACH).all() and
+        int(v[9]) >= PILE10_MIN and
         int(v.sum()) == TOTAL and
         exists_round10_partition(v)
     )
@@ -222,15 +224,18 @@ def state_from_vector(v: np.ndarray, rng: Optional[np.random.Generator] = None) 
 
 
 def random_state(rng: np.random.Generator) -> State:
-    lengths = tuple(int(v)
-                    for v in random_positive_composition(K, GROUPS, rng))
-    sums = tuple(int(v)
-                 for v in random_nonnegative_composition(REST, GROUPS, rng))
-    masks = []
-    for m, S in zip(lengths, sums):
-        r = int(S % m)
-        masks.append(choose_mask(m, r, rng))
-    return State(lengths, sums, masks)
+    while True:
+        lengths = tuple(int(v)
+                        for v in random_positive_composition(K, GROUPS, rng))
+        sums = tuple(int(v)
+                     for v in random_nonnegative_composition(REST, GROUPS, rng))
+        masks = []
+        for m, S in zip(lengths, sums):
+            r = int(S % m)
+            masks.append(choose_mask(m, r, rng))
+        st = State(lengths, sums, masks)
+        if is_legal_round10(st.decode()):
+            return st
 
 
 def repair_state(state: State, rng: np.random.Generator) -> State:
@@ -458,11 +463,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", type=str,
                         default=judge.name + "/top10k.npz")
-    parser.add_argument("--restarts", type=int, default=40)
+    parser.add_argument("--restarts", type=int, default=20)
     parser.add_argument("--iters", type=int, default=3000)
     parser.add_argument("--neighborhood", type=int, default=40)
     parser.add_argument("--max_step", type=int, default=10)
-    parser.add_argument("--seed", type=int, default=202603122205)
+    parser.add_argument("--seed", type=int, default=202603122235)
     parser.add_argument("--save", type=str,
                         default=judge.name + "/best_vs_top10k.txt")
     args = parser.parse_args()

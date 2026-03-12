@@ -2,18 +2,31 @@
 """
 Multi-stage evolution for round 10.
 
-Round 10 validity rule:
+Faster generation version.
+
+Key idea for round 10 legality:
 - 10 piles are split into 5 contiguous groups by placing 4 boards.
 - In each group, max(pile) - min(pile) <= 1.
-- A strategy is valid iff there exists at least one such partition.
+- Therefore, inside a group of length m with total sum s,
+  the group must be exactly q/q+1 form where q = s // m and r = s % m.
 
-This file only handles generation / evolution under the new legality constraint.
-Match judging still delegates to judge.calculate_match_result(a, b).
+So instead of:
+- randomly making a 10-d vector,
+- then repairing sum,
+- then testing legality with DP,
+
+we generate legal strategies directly:
+1) sample one partition length pattern
+2) sample a 5-part composition of 100 as group sums
+3) decode each group sum into q/q+1 values
+
+This makes initial unique-pool generation much faster.
 """
 
 import os
 import time
 import argparse
+import itertools
 import numpy as np
 import judge
 from typing import Optional
@@ -27,9 +40,15 @@ except Exception:
 TOTAL = 100
 K = 10
 GROUPS = 5
-MIN_GROUP_LEN = 1
 BASE = 101
 BASE_POW = [BASE ** i for i in range(K)]
+
+# all 126 contiguous 5-group partitions of length 10
+PARTITIONS = []
+for cuts in itertools.combinations(range(1, K), GROUPS - 1):
+    pts = (0,) + cuts + (K,)
+    PARTITIONS.append(tuple(pts[i + 1] - pts[i] for i in range(GROUPS)))
+PARTITIONS = np.asarray(PARTITIONS, dtype=np.int16)
 
 
 def encode_vec_int(v: np.ndarray) -> int:
@@ -45,7 +64,6 @@ def valid_group_segment(v: np.ndarray, l: int, r: int) -> bool:
 
 
 def exists_round10_partition(v: np.ndarray) -> bool:
-    """Whether v can be split into 5 contiguous non-empty groups with range <= 1 in each group."""
     ok = np.zeros((K + 1, GROUPS + 1), dtype=np.bool_)
     ok[0, 0] = True
     for i in range(1, K + 1):
@@ -58,99 +76,54 @@ def exists_round10_partition(v: np.ndarray) -> bool:
 
 
 def is_legal_round10(v: np.ndarray) -> bool:
-    """Round10 submission legality: non-negative ints, sum=100, and has a valid 5-group partition."""
     vv = np.asarray(v)
-    if vv.shape[0] != K:
-        return False
-    if (vv < 0).any():
-        return False
-    if int(vv.sum()) != TOTAL:
-        return False
-    return exists_round10_partition(vv)
+    return bool((vv >= 0).all() and int(vv.sum()) == TOTAL and exists_round10_partition(vv))
 
 
 def sample_partition_lengths(rng: np.random.Generator) -> np.ndarray:
-    """Random positive lengths summing to 10, exactly 5 groups."""
-    cuts = np.sort(rng.choice(np.arange(1, K), size=GROUPS - 1, replace=False))
-    pts = np.concatenate(([0], cuts, [K]))
-    return np.diff(pts).astype(np.int16)
+    idx = int(rng.integers(0, PARTITIONS.shape[0]))
+    return PARTITIONS[idx].copy()
 
 
-def random_valid_round10_strategy(rng: np.random.Generator, max_tries: int = 2000) -> np.ndarray:
-    """
-    Direct constructive generator.
-    For each of 5 contiguous groups, values are either base or base+1.
-    This guarantees each group's max-min <= 1.
-    """
-    for _ in range(max_tries):
-        lengths = sample_partition_lengths(rng)
-        # loose range; total fixed later by +1 counts
-        group_base = rng.integers(0, 21, size=GROUPS)
-        x = np.empty(K, dtype=np.int16)
-        pos = 0
-        for gi in range(GROUPS):
-            m = int(lengths[gi])
-            b = int(group_base[gi])
-            add1 = int(rng.integers(0, m + 1))
-            seg = np.full(m, b, dtype=np.int16)
-            if add1 > 0:
-                idx = rng.choice(m, size=add1, replace=False)
-                seg[idx] += 1
-            x[pos:pos + m] = seg
-            pos += m
+def random_group_sums(rng: np.random.Generator) -> np.ndarray:
+    """Random 5-part nonnegative composition of 100."""
+    p = rng.dirichlet(np.ones(GROUPS))
+    sums = rng.multinomial(TOTAL, p).astype(np.int16)
+    return sums
 
-        s = int(x.sum())
-        diff = TOTAL - s
-        if diff == 0 and is_legal_round10(x):
-            return x
 
-        # Adjust by moving one coin at a time inside random groups while keeping segment range <= 1.
-        y = x.copy()
-        for _adj in range(400):
-            s2 = int(y.sum())
-            if is_legal_round10(y):
-                return y
+def decode_group_sum(length: int, total_sum: int, rng: np.random.Generator) -> np.ndarray:
+    """For a group of given length and sum, construct q/q+1 pattern directly."""
+    q, r = divmod(int(total_sum), int(length))
+    seg = np.full(int(length), q, dtype=np.int16)
+    if r > 0:
+        idx = rng.choice(int(length), size=int(r), replace=False)
+        seg[idx] += 1
+    return seg
 
-            # pick a partition induced by lengths
-            pos = 0
-            changed = False
-            for gi in rng.permutation(GROUPS):
-                l = int(np.sum(lengths[:gi]))
-                r = l + int(lengths[gi])
-                seg = y[l:r]
-                mn = int(seg.min())
-                mx = int(seg.max())
-                if s2 < TOTAL:
-                    # can increase any min element if range stays <=1
-                    cand = np.where(seg == mn)[0]
-                    if cand.size > 0 and mx - mn <= 1:
-                        k = int(cand[rng.integers(0, cand.size)])
-                        seg[k] += 1
-                        changed = True
-                        break
-                else:
-                    # can decrease any max element if range stays <=1
-                    cand = np.where(seg == mx)[0]
-                    if cand.size > 0 and mx - mn <= 1:
-                        k = int(cand[rng.integers(0, cand.size)])
-                        # IMPORTANT: avoid generating negative coin counts
-                        if seg[k] > 0:
-                            seg[k] -= 1
-                            changed = True
-                            break
-            if not changed:
-                break
-        if is_legal_round10(y):
-            return y
-    raise RuntimeError("failed to generate a valid round10 strategy")
+
+def random_valid_round10_strategy(rng: np.random.Generator) -> np.ndarray:
+    lengths = sample_partition_lengths(rng)
+    sums = random_group_sums(rng)
+    x = np.empty(K, dtype=np.int16)
+    pos = 0
+    for gi in range(GROUPS):
+        m = int(lengths[gi])
+        s = int(sums[gi])
+        seg = decode_group_sum(m, s, rng)
+        x[pos:pos + m] = seg
+        pos += m
+    return x
+
+
+def random_valid_round10_batch(batch_size: int, rng: np.random.Generator) -> np.ndarray:
+    out = np.empty((batch_size, K), dtype=np.int16)
+    for b in range(batch_size):
+        out[b] = random_valid_round10_strategy(rng)
+    return out
 
 
 def repair_to_round10(x: np.ndarray, rng: Optional[np.random.Generator] = None, max_tries: int = 200) -> np.ndarray:
-    """
-    Soft repair:
-    1) fix sum to 100
-    2) if still illegal, fall back to a fresh valid sample
-    """
     if rng is None:
         rng = np.random.default_rng()
 
@@ -159,7 +132,7 @@ def repair_to_round10(x: np.ndarray, rng: Optional[np.random.Generator] = None, 
 
     s = int(y.sum())
     if s < TOTAL:
-        y[K - 1] += (TOTAL - s)
+        y[K - 1] += TOTAL - s
     elif s > TOTAL:
         extra = s - TOTAL
         for i in range(K - 1, -1, -1):
@@ -172,7 +145,6 @@ def repair_to_round10(x: np.ndarray, rng: Optional[np.random.Generator] = None, 
     if is_legal_round10(y):
         return y
 
-    # local random repair attempts
     for _ in range(max_tries):
         z = y.copy()
         i = int(rng.integers(0, K))
@@ -192,15 +164,24 @@ def random_composition_sum100(rng: np.random.Generator) -> np.ndarray:
     return random_valid_round10_strategy(rng)
 
 
-def generate_unique_strategies(N: int, seed: int, log_every: int) -> np.ndarray:
+def dedup_rows(batch: np.ndarray) -> np.ndarray:
+    if batch.shape[0] <= 1:
+        return batch
+    view = np.ascontiguousarray(batch).view(
+        np.dtype((np.void, batch.dtype.itemsize * batch.shape[1])))
+    _, idx = np.unique(view, return_index=True)
+    idx.sort()
+    return batch[idx]
+
+
+def generate_unique_strategies(N: int, seed: int, log_every: int, batch_size: int = 50000) -> np.ndarray:
     rng = np.random.default_rng(seed)
     out = np.empty((N, K), dtype=np.int16)
 
     additional_strategies = []
     if hasattr(judge, "strategies"):
         for v in judge.strategies:
-            vv = np.asarray(v, dtype=np.int16)
-            vv = repair_to_round10(vv, rng)
+            vv = repair_to_round10(np.asarray(v, dtype=np.int16), rng)
             if is_legal_round10(vv):
                 additional_strategies.append(vv)
 
@@ -218,19 +199,29 @@ def generate_unique_strategies(N: int, seed: int, log_every: int) -> np.ndarray:
     trials = 0
     t0 = time.time()
     while i < N:
-        v = random_composition_sum100(rng)
-        code = encode_vec_int(v)
-        trials += 1
-        if code in seen:
-            continue
-        seen.add(code)
-        out[i] = v
-        i += 1
-        if log_every and i % log_every == 0:
-            dt = time.time() - t0
-            dup_rate = 1.0 - i / max(trials + len(additional_strategies), 1)
-            print(
-                f"[gen] {i:,}/{N:,} valid unique | trials={trials:,} | dup={dup_rate:.4f} | {dt:.1f}s")
+        remain = N - i
+        cur_batch = min(batch_size, max(remain * 2, 10000))
+        cand = random_valid_round10_batch(cur_batch, rng)
+        trials += cur_batch
+
+        # first remove duplicates inside this batch cheaply in numpy
+        cand = dedup_rows(cand)
+
+        for v in cand:
+            code = encode_vec_int(v)
+            if code in seen:
+                continue
+            seen.add(code)
+            out[i] = v
+            i += 1
+            if log_every and i % log_every == 0:
+                dt = time.time() - t0
+                dup_rate = 1.0 - i / \
+                    max(trials + len(additional_strategies), 1)
+                print(
+                    f"[gen] {i:,}/{N:,} valid unique | trials={trials:,} | dup={dup_rate:.4f} | {dt:.1f}s")
+            if i >= N:
+                break
 
     dt = time.time() - t0
     print(f"[gen] DONE {N:,} valid unique | trials={trials:,} | {dt:.1f}s")
@@ -360,59 +351,39 @@ def stage_run(
     idx = top_n_indices(wins, out_size)
     out_strats = in_strats[idx].copy()
     out_wins = wins[idx].copy()
-
     save_stage(out_dir, stage_name, out_strats, out_wins)
     return out_strats
 
 
 def parse_args():
-    p = argparse.ArgumentParser(description="沙堆养蛊多级筛选")
-
-    # Generation
-    p.add_argument("--seed_gen", type=int, default=20260307)
-    p.add_argument("--n0", type=int, default=3_000_000,
-                   help="initial unique strategies count (default 1,000,000)")
-    p.add_argument("--gen_log_every", type=int, default=50_000,
-                   help="generation log frequency")
-
-    # Output directory
+    p = argparse.ArgumentParser(description="沙堆养蛊多级筛选 round10 fast")
+    p.add_argument("--seed_gen", type=int, default=202603122000)
+    p.add_argument("--n0", type=int, default=5_000_000)
+    p.add_argument("--gen_log_every", type=int, default=50_000)
+    p.add_argument("--gen_batch_size", type=int, default=50_000,
+                   help="candidate batch size for fast unique generation")
     p.add_argument("--out_dir", type=str, default=judge.name)
-
-    # Stage sizes (fixed per your request but still editable)
-    p.add_argument("--n1", type=int, default=300_000)
+    p.add_argument("--n1", type=int, default=500_000)
     p.add_argument("--n2", type=int, default=10_000)
     p.add_argument("--n3", type=int, default=1_000)
     p.add_argument("--n4", type=int, default=100)
-
-    # Modes per stage
-    # stage1: 1e6 -> 1e5
     p.add_argument("--mode1", type=str, default="tournament",
                    choices=["tournament", "full"])
     p.add_argument("--rounds1", type=int, default=1000)
     p.add_argument("--seed1", type=int, default=101)
-
-    # stage2: 1e5 -> 1e4
     p.add_argument("--mode2", type=str, default="tournament",
                    choices=["tournament", "full"])
     p.add_argument("--rounds2", type=int, default=10000)
     p.add_argument("--seed2", type=int, default=202)
-
-    # stage3: 1e4 -> 1e3 (这里常用 full)
     p.add_argument("--mode3", type=str, default="full",
                    choices=["tournament", "full"])
     p.add_argument("--rounds3", type=int, default=120)
     p.add_argument("--seed3", type=int, default=303)
-
-    # stage4: 1e3 -> 100 (这里也可以 full / 或 tournament 很多轮)
     p.add_argument("--mode4", type=str, default="full",
                    choices=["tournament", "full"])
     p.add_argument("--rounds4", type=int, default=300)
     p.add_argument("--seed4", type=int, default=404)
-
-    # Logging
-    p.add_argument("--log_every_rounds", type=int, default=10,
-                   help="tournament log every X rounds")
-
+    p.add_argument("--log_every_rounds", type=int, default=10)
     return p.parse_args()
 
 
@@ -420,64 +391,21 @@ def main():
     args = parse_args()
     print(f"NUMBA_OK={NUMBA_OK}")
     print(f"Output dir: {args.out_dir}")
-
-    # 0) generate unique 1,000,000
     print("\n== Generate unique strategies ==")
-    strats0 = generate_unique_strategies(
-        args.n0, seed=args.seed_gen, log_every=args.gen_log_every)
-    # 可选：保存初始100万（你没要求保存，就不保存；想要可以自己加）
+    strats0 = generate_unique_strategies(args.n0, seed=args.seed_gen,
+                                         log_every=args.gen_log_every,
+                                         batch_size=args.gen_batch_size)
 
-    # 1) 1e6 -> 1e5
-    strats1 = stage_run(
-        in_strats=strats0,
-        out_size=args.n1,
-        mode=args.mode1,
-        rounds=args.rounds1,
-        seed=args.seed1,
-        log_every_rounds=args.log_every_rounds,
-        out_dir=args.out_dir,
-        stage_name="top100k",
-    )
+    strats1 = stage_run(strats0, args.n1, args.mode1, args.rounds1, args.seed1,
+                        args.log_every_rounds, args.out_dir, "top100k")
+    strats2 = stage_run(strats1, args.n2, args.mode2, args.rounds2, args.seed2,
+                        args.log_every_rounds, args.out_dir, "top10k")
+    strats3 = stage_run(strats2, args.n3, args.mode3, args.rounds3, args.seed3,
+                        args.log_every_rounds, args.out_dir, "top1k")
+    strats4 = stage_run(strats3, args.n4, args.mode4, args.rounds4, args.seed4,
+                        args.log_every_rounds, args.out_dir, "top100")
 
-    # 2) 1e5 -> 1e4
-    strats2 = stage_run(
-        in_strats=strats1,
-        out_size=args.n2,
-        mode=args.mode2,
-        rounds=args.rounds2,
-        seed=args.seed2,
-        log_every_rounds=args.log_every_rounds,
-        out_dir=args.out_dir,
-        stage_name="top10k",
-    )
-
-    # 3) 1e4 -> 1e3
-    strats3 = stage_run(
-        in_strats=strats2,
-        out_size=args.n3,
-        mode=args.mode3,
-        rounds=args.rounds3,
-        seed=args.seed3,
-        log_every_rounds=args.log_every_rounds,
-        out_dir=args.out_dir,
-        stage_name="top1k",
-    )
-
-    # 4) 1e3 -> 100
-    strats4 = stage_run(
-        in_strats=strats3,
-        out_size=args.n4,
-        mode=args.mode4,
-        rounds=args.rounds4,
-        seed=args.seed4,
-        log_every_rounds=args.log_every_rounds,
-        out_dir=args.out_dir,
-        stage_name="top100",
-    )
-
-    # 额外：打印 top100 前 20 预览（不刷屏）
     print("\n== Preview top100 first 20 ==")
-    # 载入保存文件，确保一致
     top100_path = os.path.join(args.out_dir, "top100.npz")
     data = np.load(top100_path)
     s = data["strategies"]
