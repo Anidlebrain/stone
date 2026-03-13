@@ -292,7 +292,60 @@ strategies10 = [
     # np.array([2, 2, 2, 2, 2, 2, 2, 2, 2, 82]),
 ]
 
-round_no = 10
+strategies11 = [
+    np.array([10, 10, 10, 10, 10, 10, 10, 10, 10, 10], dtype=np.int16),
+    np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 100], dtype=np.int16),
+    np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=np.int16),
+    np.array([0, 0, 0, 0, 0, 0, 0, 45, 55, 0], dtype=np.int16),
+    np.array([0, 0, 0, 0, 0, 0, 34, 33, 33, 0], dtype=np.int16),
+    np.array([0, 0, 0, 0, 0, 20, 20, 20, 20, 20], dtype=np.int16),
+    np.array([1, 1, 1, 1, 1, 1, 1, 1, 1, 91], dtype=np.int16),
+    np.array([0, 0, 0, 0, 0, 0, 0, 0, 49, 51], dtype=np.int16),
+    np.array([0, 0, 0, 0, 0, 0, 0, 30, 30, 40], dtype=np.int16),
+    np.array([0, 0, 0, 0, 0, 0, 15, 20, 30, 35], dtype=np.int16),
+    np.array([5, 5, 5, 5, 5, 5, 10, 15, 20, 25], dtype=np.int16),
+]
+
+START_COINS = 100
+
+def calculate_match_result_round11(a, b) -> int:
+    """
+    第11回合规则：
+    - 每人初始 100 游戏币
+    - 每堆出价高者获得该堆价值，但金币减少双方出价差（大减小）
+    - 若某方金币在任意时刻变为负数，则立即判负
+    - 10 堆结束后双方都未负，则比较获得的沙堆总价值
+    """
+    coins_a = START_COINS
+    coins_b = START_COINS
+    value_a = 0
+    value_b = 0
+
+    for i in range(10):
+        ai = int(a[i])
+        bi = int(b[i])
+
+        if ai > bi:
+            diff = ai - bi
+            coins_a -= diff
+            if coins_a < 0:
+                return -1
+            value_a += i + 1
+        elif ai < bi:
+            diff = bi - ai
+            coins_b -= diff
+            if coins_b < 0:
+                return 1
+            value_b += i + 1
+        # 相等：无人得分，金币不变
+
+    if value_a > value_b:
+        return 1
+    if value_b > value_a:
+        return -1
+    return 0
+
+round_no = 11
 
 match_func = globals()[f"calculate_match_result_round{round_no}"]
 name = f"results_round{round_no}"

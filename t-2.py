@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import judge
 
-name = judge.name + "/top1K"
+name = judge.name + "/top100K"
 
 data = np.load(name + ".npz")
 
