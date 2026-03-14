@@ -9,6 +9,7 @@ try:
 except Exception:
     NUMBA_OK = False
 
+
 def calculate_match_result_round8(a, b) -> int:
     """
     计算比赛结果的核心逻辑，不包含装饰器。
@@ -45,6 +46,7 @@ def calculate_match_result_round8(a, b) -> int:
 
     # 仍相同则平局
     return 0
+
 
 def calculate_match_result_round7(a, b) -> int:
     """
@@ -96,6 +98,7 @@ def calculate_match_result_round7(a, b) -> int:
         return -1
     else:
         return 0
+
 
 strategies5 = [
     np.array([10, 10, 10, 10, 10, 10, 10, 10, 10, 10]),
@@ -180,6 +183,7 @@ def calculate_match_result_round6(a, b) -> int:
     else:
         return 0  # 平局
 
+
 strategies8 = [
     np.array([10, 10, 10, 10, 10, 10, 10, 10, 10, 10]),
 ]
@@ -209,6 +213,7 @@ strategies6 = [
     np.array([0, 0, 76, 12, 12, 0, 0, 0, 0, 0]),
 ]
 
+
 def calculate_match_result_round1(a, b) -> int:
     """
     计算比赛结果的核心逻辑，不包含装饰器。
@@ -216,6 +221,7 @@ def calculate_match_result_round1(a, b) -> int:
     a, b: int16[10] - 代表每个玩家的 10 个沙堆值
     """
     return calculate_match_result_round9(a, b)
+
 
 def calculate_match_result_round9(a, b) -> int:
     """
@@ -243,12 +249,14 @@ def calculate_match_result_round9(a, b) -> int:
     # 仍相同则平局
     return 0
 
+
 strategies9 = [
     # np.array([10, 10, 10, 10, 10, 10, 10, 10, 10, 10]),
     # np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 210]),
     np.array([1, 1, 1, 1, 1, 1, 1, 1, 1, 91]),
     np.array([2, 2, 2, 2, 2, 2, 2, 2, 2, 82]),
 ]
+
 
 def calculate_match_result_round10(a, b) -> int:
     """
@@ -308,6 +316,7 @@ strategies11 = [
 
 START_COINS = 100
 
+
 def calculate_match_result_round11(a, b) -> int:
     """
     第11回合规则：
@@ -345,7 +354,74 @@ def calculate_match_result_round11(a, b) -> int:
         return -1
     return 0
 
-round_no = 11
+
+def calculate_match_result_round13(a, b) -> int:
+    """
+    计算比赛结果的核心逻辑，不包含装饰器。
+    返回 1 如果 A 胜利，-1 如果 B 胜利，0 如果平局。
+    a, b: int16[10] - 代表每个玩家的 10 个沙堆值
+    """
+
+    odd_bonus_map = {
+        1: 0.1,
+        3: 0.2,
+        5: 0.3,
+        7: 0.4,
+        9: 0.5,
+    }
+
+    base_a = 0.0
+    base_b = 0.0
+    bonus_a = 0.0
+    bonus_b = 0.0
+
+    for i in range(10):
+        k = i + 1
+
+        if a[i] > b[i]:
+            if k % 2 == 0:
+                base_a += k
+            else:
+                bonus_a += odd_bonus_map[k]
+
+        elif b[i] > a[i]:
+            if k % 2 == 0:
+                base_b += k
+            else:
+                bonus_b += odd_bonus_map[k]
+
+    score_a = base_a * (1.0 + bonus_a)
+    score_b = base_b * (1.0 + bonus_b)
+
+    if score_a > score_b:
+        return 1
+    elif score_b > score_a:
+        return -1
+    else:
+        return 0
+
+
+strategies13 = [
+    # 1. 均衡基准
+    np.array([10, 10, 10, 10, 10, 10, 10, 10, 10, 10]),
+    # 2. 偶数优先：稳拿基础盘
+    np.array([4, 14, 4, 14, 6, 14, 8, 14, 10, 12]),
+    # 3. 偶数核心 + 9号倍率
+    np.array([3, 12, 3, 12, 5, 12, 7, 14, 18, 14]),
+    # 4. 10/8双核 + 9/7倍率
+    np.array([2, 8, 2, 10, 6, 10, 16, 16, 18, 12]),
+    # 5. 重压高位：抢 8/9/10
+    np.array([2, 4, 2, 6, 4, 8, 10, 18, 20, 26]),
+    # 6. 中高位联动：抢 6/7/8/9/10
+    np.array([1, 3, 2, 6, 6, 12, 14, 16, 18, 22]),
+    # 7. 乘法型：先保一个大偶数，再叠多个奇数倍率
+    np.array([8, 6, 10, 8, 12, 10, 14, 10, 16, 6]),
+
+    # 8. 反均匀策略：打常见平均分布
+    np.array([0, 8, 2, 8, 6, 12, 12, 14, 18, 20]),
+]
+
+round_no = 13
 
 match_func = globals()[f"calculate_match_result_round{round_no}"]
 name = f"results_round{round_no}"
