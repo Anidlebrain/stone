@@ -248,7 +248,8 @@ def structured_seeds(rng):
                 seeds.append(y)
 
     if not seeds:
-        seeds.append(np.array([0, 0, 0, 0, 0, 10, 11, 21, 22, 23], dtype=DTYPE))
+        seeds.append(
+            np.array([0, 0, 0, 0, 0, 10, 11, 21, 22, 23], dtype=DTYPE))
     return seeds
 
 
@@ -357,13 +358,17 @@ def local_search(train_pool, valid_pool, fresh_pool, x0, rng, iters=1500, neighb
                 best_metrics = current_metrics
         else:
             stall += 1
-            x = mutate_strategy(best_local, rng, max_delta=max_delta * 2, edits=6)
-            current_metrics = robust_metrics(x, train_pool, valid_pool, fresh_pool)
+            x = mutate_strategy(
+                best_local, rng, max_delta=max_delta * 2, edits=6)
+            current_metrics = robust_metrics(
+                x, train_pool, valid_pool, fresh_pool)
 
         if it % 150 == 0:
             fresh_pool = make_fresh_pool(rng, n=fresh_pool.shape[0])
-            current_metrics = robust_metrics(x, train_pool, valid_pool, fresh_pool)
-            best_metrics = robust_metrics(best_local, train_pool, valid_pool, fresh_pool)
+            current_metrics = robust_metrics(
+                x, train_pool, valid_pool, fresh_pool)
+            best_metrics = robust_metrics(
+                best_local, train_pool, valid_pool, fresh_pool)
 
         if verbose and (it == 1 or it % 150 == 0):
             (wt, tt, lt), (wv, tv, lv), (wf, tf, lf), r10 = best_metrics
@@ -383,7 +388,8 @@ def global_search(pool, restarts=100, iters=1800, neighborhood=20, max_delta=12,
     rng = np.random.default_rng(seed)
     train_pool, valid_pool = split_pool(pool, rng, train_ratio=0.7)
     seeds = structured_seeds(rng)
-    fresh_pool = make_fresh_pool(rng, n=min(3000, max(1200, pool.shape[0] // 3)))
+    fresh_pool = make_fresh_pool(rng, n=min(
+        3000, max(1200, pool.shape[0] // 3)))
 
     survivors = []
     t0 = time.time()
@@ -391,11 +397,13 @@ def global_search(pool, restarts=100, iters=1800, neighborhood=20, max_delta=12,
         p = rng.random()
         if p < 0.30:
             idx = int(rng.integers(0, train_pool.shape[0]))
-            x0 = mutate_strategy(make_valid_strategy(train_pool[idx]), rng, max_delta=6, edits=3)
+            x0 = mutate_strategy(make_valid_strategy(
+                train_pool[idx]), rng, max_delta=6, edits=3)
             source = 'train'
         elif p < 0.55:
             idx = int(rng.integers(0, valid_pool.shape[0]))
-            x0 = mutate_strategy(make_valid_strategy(valid_pool[idx]), rng, max_delta=6, edits=3)
+            x0 = mutate_strategy(make_valid_strategy(
+                valid_pool[idx]), rng, max_delta=6, edits=3)
             source = 'valid'
         elif p < 0.80:
             x0 = random_strategy(rng)
@@ -431,14 +439,16 @@ def global_search(pool, restarts=100, iters=1800, neighborhood=20, max_delta=12,
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input', type=str, default=judge.name + '/top10k.npz')
+    parser.add_argument('--input', type=str,
+                        default=judge.name + '/top10k.npz')
     parser.add_argument('--restarts', type=int, default=100)
     parser.add_argument('--iters', type=int, default=1800)
     parser.add_argument('--neighborhood', type=int, default=20)
     parser.add_argument('--max_delta', type=int, default=12)
     parser.add_argument('--seed', type=int, default=202603140010)
     parser.add_argument('--keep_top', type=int, default=12)
-    parser.add_argument('--save', type=str, default=judge.name + '/robust_best_vs_top10k_le100.txt')
+    parser.add_argument('--save', type=str, default=judge.name +
+                        '/robust_best_vs_top10k_le100.txt')
     args = parser.parse_args()
 
     print(f'NUMBA_OK={NUMBA_OK}')
