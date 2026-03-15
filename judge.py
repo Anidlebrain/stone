@@ -355,6 +355,59 @@ def calculate_match_result_round11(a, b) -> int:
     return 0
 
 
+strategies12 = [
+    np.array([2, 2, 2, 2, 2, 6, 12, 18, 24, 30], dtype=np.int16),
+    np.array([2, 2, 2, 2, 2, 2, 10, 16, 24, 32], dtype=np.int16),
+    np.array([2, 2, 2, 2, 2, 2, 2, 12, 24, 36], dtype=np.int16),
+    np.array([2, 2, 2, 2, 2, 2, 8, 14, 20, 26], dtype=np.int16),
+    np.array([2, 2, 2, 2, 2, 2, 2, 2, 18, 28], dtype=np.int16),
+    np.array([2, 2, 2, 2, 2, 2, 2, 2, 2, 20], dtype=np.int16),
+    np.array([5, 5, 5, 5, 5, 5, 5, 5, 5, 5], dtype=np.int16),
+    np.array([0, 0, 0, 0, 0, 0, 0, 15, 25, 35], dtype=np.int16),
+    np.array([10, 10, 10, 10, 10, 10, 10, 10, 10, 10], dtype=np.int16),
+    np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=np.int16),
+]
+
+
+def calculate_match_result_round12(a, b) -> int:
+    """
+    第12回合规则：
+    - 获胜沙堆按基础价值计分。
+    - 未使用的游戏币按 0.5/枚兑换为额外分数。
+    - 总分更高者获胜。
+    """
+    value_a = 0.0
+    value_b = 0.0
+
+    for i in range(10):
+        pile_value = i + 1
+        if a[i] > b[i]:
+            value_a += pile_value
+        elif a[i] < b[i]:
+            value_b += pile_value
+
+    used_a = 0
+    used_b = 0
+    for i in range(10):
+        used_a += int(a[i])
+        used_b += int(b[i])
+
+    if used_a > START_COINS or used_b > START_COINS:
+        if used_a > START_COINS and used_b > START_COINS:
+            return 0
+        return -1 if used_a > START_COINS else 1
+
+    score_a = value_a + 0.5 * (START_COINS - used_a)
+    score_b = value_b + 0.5 * (START_COINS - used_b)
+
+    if score_a > score_b:
+        return 1
+    elif score_b > score_a:
+        return -1
+    else:
+        return 0
+
+
 def calculate_match_result_round13(a, b) -> int:
     """
     计算比赛结果的核心逻辑，不包含装饰器。
@@ -421,7 +474,7 @@ strategies13 = [
     np.array([0, 8, 2, 8, 6, 12, 12, 14, 18, 20]),
 ]
 
-round_no = 13
+round_no = 12
 
 match_func = globals()[f"calculate_match_result_round{round_no}"]
 name = f"results_round{round_no}"
@@ -431,3 +484,6 @@ if NUMBA_OK:
     calculate_match_result = njit(cache=True)(match_func)
 else:
     calculate_match_result = match_func
+
+
+# 2,3,2,10,4,21,5,2,12,39

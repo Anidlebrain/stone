@@ -1,0 +1,2 @@
+2026-03-15 02:29:42 min=2 wins=9840 ties=23 losses=137 win_rate=0.984000
+strategy: 4 4 7 11 11 22 16 2 21 2

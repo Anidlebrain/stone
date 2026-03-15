@@ -1,0 +1,94 @@
+================================================================================
+2026-03-14 23:52:12 round12 search | min=0 | pool=10000
+--------------------------------------------------------------------------------
+restart=  1 src=random wins=9717 ties=29 losses=254 used=100 saved=0 strategy=0 1 2 8 11 14 17 0 22 25  <-- GLOBAL BEST
+restart=  2 src=pool   wins=9725 ties=35 losses=240 used=100 saved=0 strategy=0 0 0 0 11 0 18 21 24 26  <-- GLOBAL BEST
+restart=  3 src=pool   wins=9733 ties=28 losses=239 used=100 saved=0 strategy=0 0 0 5 11 0 17 20 22 25  <-- GLOBAL BEST
+restart=  4 src=pool   wins=9714 ties=37 losses=249 used=100 saved=0 strategy=0 0 0 8 11 14 0 20 22 25
+restart=  5 src=pool   wins=9735 ties=29 losses=236 used=100 saved=0 strategy=0 2 0 0 0 13 17 20 23 25  <-- GLOBAL BEST
+restart=  6 src=pool   wins=9735 ties=29 losses=236 used=100 saved=0 strategy=0 2 0 0 0 13 17 20 23 25
+restart=  7 src=random wins=9735 ties=29 losses=236 used=100 saved=0 strategy=0 2 0 0 0 13 17 20 23 25
+restart=  8 src=seed   wins=9733 ties=28 losses=239 used=100 saved=0 strategy=0 0 0 5 11 0 17 20 22 25
+restart=  9 src=pool   wins=9711 ties=38 losses=251 used=100 saved=0 strategy=0 0 0 7 11 14 0 20 23 25
+restart= 10 src=random wins=9733 ties=28 losses=239 used=100 saved=0 strategy=0 0 0 5 11 0 17 20 22 25
+--------------------------------------------------------------------------------
+FINAL BEST wins=9735 ties=29 losses=236 used=100 saved=0
+BEST strategy: 0 2 0 0 0 13 17 20 23 25
+================================================================================
+2026-03-15 01:38:42 round12 search | min_values=0,1,2,2,2,2,2,2,2,2 | pool=10000
+--------------------------------------------------------------------------------
+restart=  1 src=random wins=9644 ties=38 losses=318 used=100 saved=0 strategy=0 1 2 2 2 13 16 18 22 24  <-- GLOBAL BEST
+restart=  2 src=pool   wins=9641 ties=33 losses=326 used=100 saved=0 strategy=0 1 2 5 9 2 16 19 22 24
+restart=  3 src=pool   wins=9641 ties=33 losses=326 used=100 saved=0 strategy=0 1 2 5 9 2 16 19 22 24
+restart=  4 src=pool   wins=9644 ties=38 losses=318 used=100 saved=0 strategy=0 1 2 2 2 13 16 18 22 24
+restart=  5 src=pool   wins=9644 ties=38 losses=318 used=100 saved=0 strategy=0 1 2 2 2 13 16 18 22 24
+restart=  6 src=random wins=9644 ties=38 losses=318 used=100 saved=0 strategy=0 1 2 2 2 13 16 18 22 24
+restart=  7 src=pool   wins=9641 ties=33 losses=326 used=100 saved=0 strategy=0 1 2 5 9 2 16 19 22 24
+restart=  8 src=random wins=9644 ties=38 losses=318 used=100 saved=0 strategy=0 1 2 2 2 13 16 18 22 24
+restart=  9 src=random wins=9644 ties=38 losses=318 used=100 saved=0 strategy=0 1 2 2 2 13 16 18 22 24
+restart= 10 src=seed   wins=9644 ties=38 losses=318 used=100 saved=0 strategy=0 1 2 2 2 13 16 18 22 24
+restart= 11 src=seed   wins=9644 ties=38 losses=318 used=100 saved=0 strategy=0 1 2 2 2 13 16 18 22 24
+restart= 12 src=random wins=9641 ties=33 losses=326 used=100 saved=0 strategy=0 1 2 5 9 2 16 19 22 24
+restart= 13 src=random wins=9644 ties=38 losses=318 used=100 saved=0 strategy=0 1 2 2 2 13 16 18 22 24
+restart= 14 src=pool   wins=9644 ties=38 losses=318 used=100 saved=0 strategy=0 1 2 2 2 13 16 18 22 24
+restart= 15 src=pool   wins=9644 ties=38 losses=318 used=100 saved=0 strategy=0 1 2 2 2 13 16 18 22 24
+restart= 16 src=pool   wins=9644 ties=38 losses=318 used=100 saved=0 strategy=0 1 2 2 2 13 16 18 22 24
+restart= 17 src=random wins=9644 ties=38 losses=318 used=100 saved=0 strategy=0 1 2 2 2 13 16 18 22 24
+restart= 18 src=pool   wins=9644 ties=38 losses=318 used=100 saved=0 strategy=0 1 2 2 2 13 16 18 22 24
+restart= 19 src=random wins=9644 ties=38 losses=318 used=100 saved=0 strategy=0 1 2 2 2 13 16 18 22 24
+restart= 20 src=random wins=9644 ties=38 losses=318 used=100 saved=0 strategy=0 1 2 2 2 13 16 18 22 24
+--------------------------------------------------------------------------------
+FINAL BEST wins=9644 ties=38 losses=318 used=100 saved=0
+BEST strategy: 0 1 2 2 2 13 16 18 22 24
+================================================================================
+2026-03-15 01:55:17 round12 search | min_values=0,1,2,11,2,2,2,2,2,2 | pool=10000
+--------------------------------------------------------------------------------
+restart=  1 src=random wins=9476 ties=51 losses=473 used=100 saved=0 strategy=0 1 2 11 9 13 16 2 22 24  <-- GLOBAL BEST
+restart=  2 src=random wins=9476 ties=51 losses=473 used=100 saved=0 strategy=0 1 2 11 9 13 16 2 22 24
+restart=  3 src=pool   wins=9477 ties=58 losses=465 used=100 saved=0 strategy=0 1 3 11 2 2 16 19 22 24  <-- GLOBAL BEST
+restart=  4 src=random wins=9476 ties=51 losses=473 used=100 saved=0 strategy=0 1 2 11 9 13 16 2 22 24
+restart=  5 src=seed   wins=9476 ties=51 losses=473 used=100 saved=0 strategy=0 1 2 11 9 13 16 2 22 24
+restart=  6 src=pool   wins=9477 ties=58 losses=465 used=100 saved=0 strategy=0 1 3 11 2 2 16 19 22 24
+restart=  7 src=random wins=9442 ties=66 losses=492 used=100 saved=0 strategy=0 1 3 11 10 13 17 19 2 24
+restart=  8 src=pool   wins=9477 ties=58 losses=465 used=100 saved=0 strategy=0 1 3 11 2 2 16 19 22 24
+restart=  9 src=random wins=9477 ties=58 losses=465 used=100 saved=0 strategy=0 1 3 11 2 2 16 19 22 24
+restart= 10 src=random wins=9477 ties=58 losses=465 used=100 saved=0 strategy=0 1 3 11 2 2 16 19 22 24
+restart= 11 src=seed   wins=9476 ties=51 losses=473 used=100 saved=0 strategy=0 1 2 11 9 13 16 2 22 24
+restart= 12 src=random wins=9477 ties=58 losses=465 used=100 saved=0 strategy=0 1 3 11 2 2 16 19 22 24
+restart= 13 src=random wins=9476 ties=51 losses=473 used=100 saved=0 strategy=0 1 2 11 9 13 16 2 22 24
+restart= 14 src=pool   wins=9442 ties=66 losses=492 used=100 saved=0 strategy=0 1 3 11 10 13 17 19 2 24
+restart= 15 src=seed   wins=9477 ties=58 losses=465 used=100 saved=0 strategy=0 1 3 11 2 2 16 19 22 24
+restart= 16 src=seed   wins=9477 ties=58 losses=465 used=100 saved=0 strategy=0 1 3 11 2 2 16 19 22 24
+restart= 17 src=random wins=9477 ties=58 losses=465 used=100 saved=0 strategy=0 1 3 11 2 2 16 19 22 24
+restart= 18 src=random wins=9476 ties=51 losses=473 used=100 saved=0 strategy=0 1 2 11 9 13 16 2 22 24
+restart= 19 src=random wins=9476 ties=51 losses=473 used=100 saved=0 strategy=0 1 2 11 9 13 16 2 22 24
+restart= 20 src=pool   wins=9476 ties=51 losses=473 used=100 saved=0 strategy=0 1 2 11 9 13 16 2 22 24
+--------------------------------------------------------------------------------
+FINAL BEST wins=9477 ties=58 losses=465 used=100 saved=0
+BEST strategy: 0 1 3 11 2 2 16 19 22 24
+================================================================================
+2026-03-15 02:10:25 round12 search | min_values=0,1,2,2,2,2,2,2,2,2 | pool=10000 | must_beat=0,0,0,0,0,0,0,0,0,0; 10,10,10,10,10,10,10,10,10,10; 1,1,11,11,1,21,24,28,1,1; 0,3,3,3,7,10,13,17,19,22
+--------------------------------------------------------------------------------
+restart=  1 src=random must_beat=4/4(OK) wins=9455 ties=61 losses=484 used=100 saved=0 strategy=0 2 2 11 2 2 16 19 22 24  <-- GLOBAL BEST
+restart=  2 src=pool   must_beat=4/4(OK) wins=9382 ties=59 losses=559 used=100 saved=0 strategy=0 2 2 11 10 14 17 20 22 2
+restart=  3 src=random must_beat=4/4(OK) wins=9445 ties=45 losses=510 used=100 saved=0 strategy=0 2 2 11 9 12 16 2 22 24
+restart=  4 src=random must_beat=4/4(OK) wins=9445 ties=45 losses=510 used=100 saved=0 strategy=0 2 2 11 9 12 16 2 22 24
+restart=  5 src=random must_beat=4/4(OK) wins=9445 ties=45 losses=510 used=100 saved=0 strategy=0 2 2 11 9 12 16 2 22 24
+restart=  6 src=random must_beat=4/4(OK) wins=9455 ties=61 losses=484 used=100 saved=0 strategy=0 2 2 11 2 2 16 19 22 24
+restart=  7 src=seed   must_beat=4/4(OK) wins=9437 ties=53 losses=510 used=100 saved=0 strategy=0 2 2 11 8 12 2 18 21 24
+restart=  8 src=pool   must_beat=4/4(OK) wins=9455 ties=61 losses=484 used=100 saved=0 strategy=0 2 2 11 2 2 16 19 22 24
+restart=  9 src=random must_beat=4/4(OK) wins=9445 ties=45 losses=510 used=100 saved=0 strategy=0 2 2 11 9 12 16 2 22 24
+restart= 10 src=pool   must_beat=4/4(OK) wins=9455 ties=61 losses=484 used=100 saved=0 strategy=0 2 2 11 2 2 16 19 22 24
+restart= 11 src=pool   must_beat=4/4(OK) wins=9455 ties=61 losses=484 used=100 saved=0 strategy=0 2 2 11 2 2 16 19 22 24
+restart= 12 src=random must_beat=4/4(OK) wins=9436 ties=61 losses=503 used=100 saved=0 strategy=0 2 2 11 10 13 17 19 2 24
+restart= 13 src=pool   must_beat=4/4(OK) wins=9445 ties=45 losses=510 used=100 saved=0 strategy=0 2 2 11 9 12 16 2 22 24
+restart= 14 src=pool   must_beat=4/4(OK) wins=9436 ties=61 losses=503 used=100 saved=0 strategy=0 2 2 11 10 13 17 19 2 24
+restart= 15 src=seed   must_beat=4/4(OK) wins=9455 ties=61 losses=484 used=100 saved=0 strategy=0 2 2 11 2 2 16 19 22 24
+restart= 16 src=random must_beat=4/4(OK) wins=9445 ties=45 losses=510 used=100 saved=0 strategy=0 2 2 11 9 12 16 2 22 24
+restart= 17 src=random must_beat=4/4(OK) wins=9382 ties=59 losses=559 used=100 saved=0 strategy=0 2 2 11 10 14 17 20 22 2
+restart= 18 src=pool   must_beat=4/4(OK) wins=9436 ties=61 losses=503 used=100 saved=0 strategy=0 2 2 11 10 13 17 19 2 24
+restart= 19 src=random must_beat=4/4(OK) wins=9455 ties=61 losses=484 used=100 saved=0 strategy=0 2 2 11 2 2 16 19 22 24
+restart= 20 src=random must_beat=4/4(OK) wins=9455 ties=61 losses=484 used=100 saved=0 strategy=0 2 2 11 2 2 16 19 22 24
+--------------------------------------------------------------------------------
+FINAL BEST must_beat=4/4(OK) wins=9455 ties=61 losses=484 used=100 saved=0
+BEST strategy: 0 2 2 11 2 2 16 19 22 24

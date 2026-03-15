@@ -106,6 +106,7 @@ def check_min_value(min_value):
             f"invalid min_value={min_value}, because {min_value} * {K} > {TOTAL}"
         )
 
+
 def random_strategy(rng, min_value=0):
     check_min_value(min_value)
 
@@ -149,7 +150,8 @@ def repair_sum_100(x, min_value=0):
             break
 
     if extra != 0:
-        raise ValueError("repair failed: cannot satisfy sum=TOTAL with given min_value")
+        raise ValueError(
+            "repair failed: cannot satisfy sum=TOTAL with given min_value")
 
     return x
 
@@ -233,7 +235,8 @@ def structured_seeds(max_delta=3, keep_original=True, rng=None, min_value=0):
             seeds.append(base.copy())
 
         for _ in range(n):
-            new_s = jitter_strategy(base, max_delta=max_delta, rng=rng, min_value=min_value)
+            new_s = jitter_strategy(
+                base, max_delta=max_delta, rng=rng, min_value=min_value)
             seeds.append(new_s)
 
     return seeds
@@ -272,7 +275,8 @@ def local_search(pool, x0, rng, iters=3000, neighborhood=40, max_step=8, verbose
         cand_score = None
 
         for _ in range(neighborhood):
-            y = mutate_strategy(x, rng, max_step=max_step, moves=3, min_value=min_value)
+            y = mutate_strategy(x, rng, max_step=max_step,
+                                moves=3, min_value=min_value)
             wy, ty, ly = evaluate_against_pool(y, pool)
             sc = score_tuple(wy, ty, ly)
 
@@ -335,7 +339,8 @@ def global_search(
             idx = rng.integers(0, pool.shape[0])
             x0 = pool[idx].copy()
             x0 = repair_sum_100(x0, min_value=min_value)
-            x0 = mutate_strategy(x0, rng, max_step=5, moves=2, min_value=min_value)
+            x0 = mutate_strategy(x0, rng, max_step=5,
+                                 moves=2, min_value=min_value)
 
         elif p < 0.8:
             # 随机
@@ -372,13 +377,14 @@ def global_search(
 
     return global_best, global_w, global_t, global_l
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", type=str,
                         default=judge.name + "/top10k.npz")
     parser.add_argument("--restarts", type=int, default=30,
                         help="number of global restarts")
-    parser.add_argument("--iters", type=int, default=5000,
+    parser.add_argument("--iters", type=int, default=2000,
                         help="local search iterations per restart")
     parser.add_argument("--neighborhood", type=int, default=40,
                         help="mutations tried per iteration")
@@ -388,7 +394,7 @@ def main():
     parser.add_argument("--save", type=str,
                         default=judge.name + "/best_vs_top10k.txt")
     parser.add_argument("--min_value", type=int, default=2,
-                    help="minimum coins for each pile")
+                        help="minimum coins for each pile")
     args = parser.parse_args()
     check_min_value(args.min_value)
     print(f"NUMBA_OK={NUMBA_OK}")
