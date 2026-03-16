@@ -3,8 +3,8 @@
 Generic optimized search best strategy against top10k.npz
 
 Compared with the old t-3.py, this version adds:
-- per-pile minimum values via --min_values (replaces single --min_value)
-- must-beat constraints via --must_beat
+- per-pile minimum values loaded from judge.py
+- must-beat constraints loaded from judge.py
 - better logs and restart/result persistence
 - faster search via:
   1) must_beat early filtering
@@ -137,22 +137,9 @@ else:
 # Constraints / parsing
 # =========================================================
 
-def normalize_min_values(min_values=None, min_value=None):
+def normalize_min_values(min_values=None):
     if min_values is None:
-        if min_value is None:
-            arr = np.zeros(K, dtype=np.int16)
-        else:
-            arr = np.full(K, int(min_value), dtype=np.int16)
-    elif isinstance(min_values, str):
-        text = min_values.strip()
-        if not text:
-            arr = np.zeros(K, dtype=np.int16)
-        else:
-            parts = [p.strip() for p in text.split(',') if p.strip() != '']
-            if len(parts) != K:
-                raise ValueError(
-                    f'min_values must contain exactly {K} integers, got {len(parts)}')
-            arr = np.array([int(p) for p in parts], dtype=np.int16)
+        arr = np.zeros(K, dtype=np.int16)
     else:
         arr = np.asarray(min_values, dtype=np.int16)
         if arr.shape != (K,):
@@ -423,11 +410,11 @@ def local_search(pool, x0, rng, mins, must_beat_pool=None, iters=3000,
 
 
 def global_search(pool, restarts=30, iters=3000, neighborhood=40, max_step=8,
-                  seed=1, verbose=True, min_values=None, min_value=None,
+                  seed=1, verbose=True, min_values=None,
                   must_beat_pool=None, prescreen_size=1024,
                   full_eval_top_k=4, refresh_prescreen_every=25,
                   seed_jitters=24):
-    mins = normalize_min_values(min_values=min_values, min_value=min_value)
+    mins = normalize_min_values(min_values=min_values)
     rng = np.random.default_rng(seed)
 
     global_best = None
@@ -523,7 +510,7 @@ def save_restart_results(path, results, best_x, best_w, best_t, best_l,
     with open(path, 'a', encoding='utf8') as f:
         f.write('=' * 80 + '\n')
         f.write(
-            f"{time.strftime('%Y-%m-%d %H:%M:%S')} generic search "
+            f"{time.strftime('%Y-%m-%d %H:%M:%S')} round={judge.round_no} generic search "
             f"| min_values={min_values_to_text(min_values)} "
             f"| pool={pool_size} | must_beat={must_beat_to_text(must_beat_pool)} "
             f"| prescreen_size={args.prescreen_size} | full_eval_top_k={args.full_eval_top_k} "
@@ -565,12 +552,6 @@ def main():
     parser.add_argument('--seed', type=int, default=202603082229)
     parser.add_argument('--save', type=str,
                         default=judge.name + '/best_vs_top10k.txt')
-    parser.add_argument('--min_value', type=int, default=None,
-                        help='uniform minimum coins for each pile; kept for compatibility')
-    parser.add_argument('--min_values', type=str, default='',
-                        help='comma separated per-pile minimums, e.g. 0,1,2,2,2,2,2,2,2,2')
-    parser.add_argument('--must_beat', type=str, default='',
-                        help='semicolon-separated strategies that the result must beat')
     parser.add_argument('--prescreen_size', type=int, default=1024,
                         help='sampled pool size for fast prescreen; 0 means full pool only')
     parser.add_argument('--full_eval_top_k', type=int, default=4,
@@ -581,13 +562,11 @@ def main():
                         help='number of jittered structured seeds per base strategy')
     args = parser.parse_args()
 
-    mins = normalize_min_values(
-        min_values=(args.min_values if args.min_values.strip() else None),
-        min_value=args.min_value,
-    )
-    must_beat_pool = parse_must_beat(args.must_beat)
+    mins = normalize_min_values(judge.min_values)
+    must_beat_pool = parse_must_beat(judge.must_beat)
 
     print(f'NUMBA_OK={NUMBA_OK}')
+    print(f'Round = {judge.round_no}')
     print(f'Loading {args.input} ...')
     print(f'min_values = {mins.tolist()}')
     print(f'prescreen_size = {args.prescreen_size}')

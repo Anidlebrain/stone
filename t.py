@@ -56,13 +56,15 @@ def random_composition_sum100(rng: np.random.Generator) -> np.ndarray:
 
 def generate_unique_strategies(N: int, seed: int, log_every: int) -> np.ndarray:
     rng = np.random.default_rng(seed)
-    out = np.empty((N, K), dtype=np.int16)
+    total_n = N
+    out = np.empty((total_n, K), dtype=np.int16)
 
     additional_strategies = judge.strategies
 
     additional_count = len(additional_strategies)
+    if additional_count > total_n:
+        raise ValueError(f'judge.strategies has {additional_count} items, larger than n0={total_n}')
     out[:additional_count] = additional_strategies
-    N -= additional_count  # Decrease the remaining strategies to be generated
 
     seen = set()
     for v in additional_strategies:
@@ -73,7 +75,7 @@ def generate_unique_strategies(N: int, seed: int, log_every: int) -> np.ndarray:
     trials = 0
     t0 = time.time()
 
-    while i < N:
+    while i < total_n:
         v = random_composition_sum100(rng)
         code = encode_vec_int(v)
         trials += 1
@@ -87,12 +89,12 @@ def generate_unique_strategies(N: int, seed: int, log_every: int) -> np.ndarray:
             dt = time.time() - t0
             dup_rate = 1.0 - i / max(trials, 1)
             print(
-                f"[gen] {i:,}/{N:,} unique | trials={trials:,} | dup={dup_rate:.4f} | {dt:.1f}s")
+                f"[gen] {i:,}/{total_n:,} unique | trials={trials:,} | dup={dup_rate:.4f} | {dt:.1f}s")
 
     dt = time.time() - t0
-    dup_rate = 1.0 - N / max(trials, 1)
+    dup_rate = 1.0 - total_n / max(trials, 1)
     print(
-        f"[gen] DONE {N:,} unique | trials={trials:,} | dup={dup_rate:.4f} | {dt:.1f}s")
+        f"[gen] DONE {total_n:,} unique | trials={trials:,} | dup={dup_rate:.4f} | {dt:.1f}s")
     return out
 
 
@@ -300,7 +302,10 @@ def parse_args():
 def main():
     args = parse_args()
     print(f"NUMBA_OK={NUMBA_OK}")
+    print(f"Round: {judge.round_no}")
     print(f"Output dir: {args.out_dir}")
+    print(f"min_values from judge: {judge.min_values.tolist()}")
+    print(f"must_beat count from judge: {int(judge.must_beat.shape[0])}")
 
     # 0) generate unique 1,000,000
     print("\n== Generate unique strategies ==")
