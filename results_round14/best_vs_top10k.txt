@@ -34,3 +34,35 @@ restart= 30 src=pool   must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 s
 --------------------------------------------------------------------------------
 FINAL BEST must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0
 BEST strategy: 1 2 3 6 2 12 0 27 0 47
+================================================================================
+2026-03-16 13:17:27 round=14 generic search | min_values=0,0,0,0,0,0,0,0,0,0 | pool=10000 | must_beat=10,10,10,10,10,10,10,10,10,10 | prescreen_size=1024 | full_eval_top_k=4 | refresh_prescreen_every=25
+--------------------------------------------------------------------------------
+restart=  1 src=pool   must_beat=1/1(OK) wins=9837 ties=0 losses=163 used=100 saved=0 strategy=0 0 0 0 0 0 0 0 46 54  <-- GLOBAL BEST
+restart=  2 src=random must_beat=1/1(OK) wins=9837 ties=0 losses=163 used=100 saved=0 strategy=0 0 0 0 0 0 0 0 46 54
+restart=  3 src=pool   must_beat=1/1(OK) wins=9837 ties=0 losses=163 used=100 saved=0 strategy=0 0 0 0 0 0 0 0 46 54
+restart=  4 src=seed   must_beat=1/1(OK) wins=9837 ties=0 losses=163 used=100 saved=0 strategy=0 0 0 0 0 0 0 0 46 54
+restart=  5 src=pool   must_beat=1/1(OK) wins=9837 ties=0 losses=163 used=100 saved=0 strategy=0 0 0 0 0 0 0 0 46 54
+restart=  6 src=random must_beat=1/1(OK) wins=9837 ties=0 losses=163 used=100 saved=0 strategy=0 0 0 0 0 0 0 0 46 54
+restart=  7 src=random must_beat=1/1(OK) wins=9837 ties=0 losses=163 used=100 saved=0 strategy=0 0 0 0 0 0 0 0 46 54
+restart=  8 src=random must_beat=1/1(OK) wins=9837 ties=0 losses=163 used=100 saved=0 strategy=0 0 0 0 0 0 0 0 46 54
+restart=  9 src=seed   must_beat=1/1(OK) wins=9837 ties=0 losses=163 used=100 saved=0 strategy=0 0 0 0 0 0 0 0 46 54
+restart= 10 src=pool   must_beat=1/1(OK) wins=9837 ties=0 losses=163 used=100 saved=0 strategy=0 0 0 0 0 0 0 0 46 54
+--------------------------------------------------------------------------------
+FINAL BEST must_beat=1/1(OK) wins=9837 ties=0 losses=163 used=100 saved=0
+BEST strategy: 0 0 0 0 0 0 0 0 46 54
+================================================================================
+2026-03-16 13:23:20 round=14 generic search | min_values=0,0,0,0,0,0,0,0,0,0 | pool=10000 | must_beat=10,10,10,10,10,10,10,10,10,10; 2,2,2,2,2,2,2,2,0,92; 0,0,0,0,0,0,0,0,50,50; 12,12,12,12,12,12,12,16,0,0; 1,1,1,1,1,1,1,1,92,0; 0,0,0,0,0,0,0,0,46,54 | prescreen_size=1024 | full_eval_top_k=4 | refresh_prescreen_every=25
+--------------------------------------------------------------------------------
+restart=  1 src=pool   must_beat=6/6(OK) wins=9545 ties=14 losses=441 used=100 saved=0 strategy=0 0 11 0 0 0 33 0 1 55  <-- GLOBAL BEST
+restart=  2 src=random must_beat=6/6(OK) wins=9679 ties=14 losses=307 used=100 saved=0 strategy=0 0 0 0 1 0 3 2 40 54  <-- GLOBAL BEST
+restart=  3 src=seed   must_beat=6/6(OK) wins=9418 ties=31 losses=551 used=100 saved=0 strategy=0 0 11 0 0 0 2 36 51 0
+restart=  4 src=seed   must_beat=6/6(OK) wins=9418 ties=31 losses=551 used=100 saved=0 strategy=0 0 11 0 0 0 2 36 51 0
+restart=  5 src=random must_beat=4/6(NO) wins=-1 ties=0 losses=1000000000 used=100 saved=0 strategy=7 6 26 6 6 5 18 10 2 14
+restart=  6 src=random must_beat=4/6(NO) wins=-1 ties=0 losses=1000000000 used=100 saved=0 strategy=4 26 0 1 17 11 6 33 2 0
+restart=  7 src=seed   must_beat=6/6(OK) wins=9418 ties=31 losses=551 used=100 saved=0 strategy=0 0 11 0 0 0 2 36 51 0
+restart=  8 src=pool   must_beat=6/6(OK) wins=9679 ties=14 losses=307 used=100 saved=0 strategy=0 0 0 0 1 0 3 2 40 54
+restart=  9 src=random must_beat=4/6(NO) wins=-1 ties=0 losses=1000000000 used=100 saved=0 strategy=4 6 10 26 6 12 21 0 4 11
+restart= 10 src=seed   must_beat=6/6(OK) wins=9418 ties=31 losses=551 used=100 saved=0 strategy=0 0 11 0 0 0 2 36 51 0
+--------------------------------------------------------------------------------
+FINAL BEST must_beat=6/6(OK) wins=9679 ties=14 losses=307 used=100 saved=0
+BEST strategy: 0 0 0 0 1 0 3 2 40 54

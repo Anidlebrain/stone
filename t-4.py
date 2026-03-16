@@ -13,17 +13,18 @@ BOOST = 1.5
 CLOSE_LOSS = 5.0
 
 # 你的策略
-# MY = np.array([0, 1, 17, 18, 19, 0, 21, 0, 24, 0], dtype=float)
-MY1 = np.array([0, 16, 0,0,19,21,22,22,0,0], dtype=float)
-you1 = np.array([16,16,14,2,2,2,2,14,16,16])
 
-print(judge.calculate_match_result_round8(MY1, you1))
+MY1 = np.array( [0, 0, 0, 0, 1, 0, 3, 2, 40, 54], dtype=float)
+you1 = np.array([0, 0, 0, 0, 0, 0, 0, 0, 46, 54])
+
+print(judge.calculate_match_result(MY1, you1))
 
 # 0 16 0 0 19 21 22 22 0 0
 # 0 1 17 18 19 0 21 0 24 0
 
+MY = np.array([0, 1, 17, 18, 19, 0, 21, 0, 24, 0], dtype=float)
 # ==============================
-# 第四回合规则
+# 判定
 # ==============================
 
 def play(a, b):

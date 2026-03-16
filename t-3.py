@@ -541,7 +541,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--input', type=str,
                         default=judge.name + '/top10k.npz')
-    parser.add_argument('--restarts', type=int, default=30,
+    parser.add_argument('--restarts', type=int, default=10,
                         help='number of global restarts')
     parser.add_argument('--iters', type=int, default=3000,
                         help='local search iterations per restart')

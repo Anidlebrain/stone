@@ -392,7 +392,7 @@ must_beat14 = [
     np.array([0, 0, 0, 0, 0, 0, 0, 0, 50, 50], dtype=np.int16),
     np.array([12, 12, 12, 12, 12, 12, 12, 16, 0, 0], dtype=np.int16),
     np.array([1, 1, 1, 1, 1, 1, 1, 1, 92, 0], dtype=np.int16),
-    
+    np.array([0, 0, 0, 0, 0, 0, 0, 0, 46, 54], dtype=np.int16),
 ]
 
 
