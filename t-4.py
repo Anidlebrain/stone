@@ -13,7 +13,7 @@ BOOST = 1.5
 CLOSE_LOSS = 5.0
 
 # 你的策略
-MY = np.array([0, 1, 17, 18, 19, 0, 21, 0, 24, 0], dtype=float)
+# MY = np.array([0, 1, 17, 18, 19, 0, 21, 0, 24, 0], dtype=float)
 MY1 = np.array([0, 16, 0,0,19,21,22,22,0,0], dtype=float)
 you1 = np.array([16,16,14,2,2,2,2,14,16,16])
 
@@ -121,5 +121,5 @@ def main():
     print("win_rate =", wins/N)
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

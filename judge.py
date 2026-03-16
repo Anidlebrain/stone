@@ -334,7 +334,11 @@ strategies13 = [
 must_beat13 = [
     np.array([10, 10, 10, 10, 10, 10, 10, 10, 10, 10], dtype=np.int16),
     np.array([2, 3, 2, 10, 4, 21, 5, 2, 12, 39], dtype=np.int16),
+    np.array([4, 4, 7, 11, 11, 22, 16, 2, 21, 2], dtype=np.int16),
+    np.array([0, 0, 0, 21, 1, 0, 0, 36, 0, 42], dtype=np.int16),
 ]
+
+min_values13 = np.array([1, 1, 1, 1, 1, 1, 1, 1, 1, 1], dtype=np.int16)
 
 min_values14 = np.array([0, 0, 0, 0, 2, 4, 6, 8, 10, 10], dtype=np.int16)
 
@@ -374,10 +378,22 @@ strategies14 = [
     np.array([5, 5, 5, 7, 8, 10, 13, 15, 16, 16], dtype=np.int16),
     np.array([4, 7, 4, 7, 5, 9, 13, 16, 17, 18], dtype=np.int16),
     np.array([6, 6, 6, 6, 8, 10, 12, 14, 16, 16], dtype=np.int16),
+    np.array([10] * 10, dtype=np.int16),
+    np.array([2, 2, 2, 2, 2, 2, 2, 2, 0, 92], dtype=np.int16),
+    np.array([0, 0, 0, 0, 0, 0, 0, 0, 50, 50], dtype=np.int16),
+    np.array([12, 12, 12, 12, 12, 12, 12, 16, 0, 0], dtype=np.int16),
+    np.array([1, 1, 1, 1, 1, 1, 1, 1, 92, 0], dtype=np.int16),
 ]
 
-min_values14 = np.array([0, 0, 0, 0, 2, 4, 6, 8, 10, 10], dtype=np.int16)
-must_beat14 = [np.array([10] * 10, dtype=np.int16)]
+min_values14 = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=np.int16)
+must_beat14 = [
+    np.array([10] * 10, dtype=np.int16),
+    np.array([2, 2, 2, 2, 2, 2, 2, 2, 0, 92], dtype=np.int16),
+    np.array([0, 0, 0, 0, 0, 0, 0, 0, 50, 50], dtype=np.int16),
+    np.array([12, 12, 12, 12, 12, 12, 12, 16, 0, 0], dtype=np.int16),
+    np.array([1, 1, 1, 1, 1, 1, 1, 1, 92, 0], dtype=np.int16),
+    
+]
 
 
 def _zero_min_values():
@@ -423,7 +439,7 @@ ROUND_CONFIG = {
     14: {"match_func": calculate_match_result_round14, "strategies": strategies14, "min_values": min_values14, "must_beat": must_beat14},
 }
 
-CURRENT_ROUND = 13
+CURRENT_ROUND = 14
 
 
 def get_round_config(round_id=None):

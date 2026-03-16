@@ -1,0 +1,36 @@
+================================================================================
+2026-03-16 11:59:11 round=14 generic search | min_values=0,0,0,0,0,0,0,0,0,0 | pool=10000 | must_beat=10,10,10,10,10,10,10,10,10,10; 2,2,2,2,2,2,2,2,0,92; 0,0,0,0,0,0,0,0,50,50; 12,12,12,12,12,12,12,16,0,0; 1,1,1,1,1,1,1,1,92,0 | prescreen_size=1024 | full_eval_top_k=4 | refresh_prescreen_every=25
+--------------------------------------------------------------------------------
+restart=  1 src=pool   must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47  <-- GLOBAL BEST
+restart=  2 src=pool   must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart=  3 src=random must_beat=5/5(OK) wins=8947 ties=30 losses=1023 used=100 saved=0 strategy=1 3 4 11 10 21 14 36 0 0
+restart=  4 src=pool   must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart=  5 src=pool   must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart=  6 src=random must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart=  7 src=pool   must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart=  8 src=seed   must_beat=5/5(OK) wins=9408 ties=17 losses=575 used=100 saved=0 strategy=1 2 3 6 4 12 0 27 0 45
+restart=  9 src=pool   must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart= 10 src=pool   must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart= 11 src=random must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart= 12 src=pool   must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart= 13 src=random must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart= 14 src=pool   must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart= 15 src=pool   must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart= 16 src=pool   must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart= 17 src=pool   must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart= 18 src=pool   must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart= 19 src=pool   must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart= 20 src=seed   must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart= 21 src=random must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart= 22 src=seed   must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart= 23 src=seed   must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart= 24 src=random must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart= 25 src=pool   must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart= 26 src=seed   must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart= 27 src=pool   must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart= 28 src=random must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart= 29 src=random must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+restart= 30 src=pool   must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0 strategy=1 2 3 6 2 12 0 27 0 47
+--------------------------------------------------------------------------------
+FINAL BEST must_beat=5/5(OK) wins=9414 ties=24 losses=562 used=100 saved=0
+BEST strategy: 1 2 3 6 2 12 0 27 0 47
