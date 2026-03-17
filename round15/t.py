@@ -13,7 +13,7 @@ import judge
 
 try:
     from numba import njit
-    NUMBA_OK = False
+    NUMBA_OK = True
 except Exception:
     NUMBA_OK = False
 
@@ -71,9 +71,11 @@ def generate_unique_strategies(n: int, seed: int, log_every: int) -> np.ndarray:
 
 
 if NUMBA_OK:
+    MATCH_FUNC = judge.calculate_match_result_nb
+
     @njit(cache=True)
     def match_result(a, b):
-        return judge.calculate_match_result(a, b)
+        return MATCH_FUNC(a, b)
 
     @njit(cache=True)
     def run_one_round(strats, order, wins):
@@ -103,7 +105,7 @@ else:
         return judge.calculate_match_result(a, b)
 
     def run_one_round(strats, order, wins):
-        n = len(order)
+        n = order.shape[0]
         for j in range(0, n - 1, 2):
             i1 = order[j]
             i2 = order[j + 1]
@@ -116,8 +118,9 @@ else:
     def full_round_robin(strats, wins):
         n = strats.shape[0]
         for i in range(n):
+            ai = strats[i]
             for j in range(i + 1, n):
-                r = match_result(strats[i], strats[j])
+                r = match_result(ai, strats[j])
                 if r == 1:
                     wins[i] += 1
                 elif r == -1:
@@ -129,27 +132,18 @@ def evolve_tournament(strats: np.ndarray, rounds: int, seed: int, log_every_roun
     n = strats.shape[0]
     wins = np.zeros(n, dtype=np.int32)
     order = np.arange(n, dtype=np.int32)
-
     t0 = time.time()
     for r in range(1, rounds + 1):
         rng.shuffle(order)
         run_one_round(strats, order, wins)
-        if log_every_rounds and (r % log_every_rounds == 0 or r == 1):
-            dt = time.time() - t0
-            print(f'[tournament] round {r}/{rounds} | best={wins.max()} | mean={wins.mean():.3f} | {dt:.1f}s')
-
-    dt = time.time() - t0
-    print(f'[tournament] DONE rounds={rounds} | {dt:.1f}s | best={wins.max()} | mean={wins.mean():.3f}')
+        if log_every_rounds and (r == 1 or r % log_every_rounds == 0):
+            print(f'[mc] round {r}/{rounds} | elapsed={time.time() - t0:.1f}s')
     return wins
 
 
 def evolve_full(strats: np.ndarray) -> np.ndarray:
-    n = strats.shape[0]
-    wins = np.zeros(n, dtype=np.int32)
-    t0 = time.time()
+    wins = np.zeros(strats.shape[0], dtype=np.int32)
     full_round_robin(strats, wins)
-    dt = time.time() - t0
-    print(f'[full] DONE n={n:,} | games={n*(n-1)//2:,} | {dt:.1f}s | best={wins.max()} | mean={wins.mean():.3f}')
     return wins
 
 

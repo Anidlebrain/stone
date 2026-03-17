@@ -14,7 +14,7 @@ import judge
 
 try:
     from numba import njit
-    NUMBA_OK = False
+    NUMBA_OK = True
 except Exception:
     NUMBA_OK = False
 
@@ -24,9 +24,11 @@ K = judge.K
 BAD_LOSS = 10 ** 9
 
 if NUMBA_OK:
+    MATCH_FUNC = judge.calculate_match_result_nb
+
     @njit(cache=True)
     def match_result(a, b):
-        return judge.calculate_match_result(a, b)
+        return MATCH_FUNC(a, b)
 
     @njit(cache=True)
     def evaluate_against_pool(x, pool):
@@ -180,7 +182,7 @@ def exact_sum_repair(values, total, mins):
     return y.astype(np.int16)
 
 
-def repair_strategy(x, mins):
+def repair_strategy(x, mins, rng=None):
     y = np.asarray(x, dtype=np.int16).copy()
     buy_a = 1 if int(y[0]) > 0 else 0
     buy_b = 1 if int(y[1]) > 0 else 0
@@ -194,8 +196,10 @@ def repair_strategy(x, mins):
         max_ins = TOTAL - skill_cost - int(pile_mins.sum())
         if max_ins < min_insurance_when_a:
             buy_a = 0
+            y[0] = 0
+            y[3] = 0
             skill_cost = judge.skill_cost_from_flags(buy_a, buy_b, buy_c)
-        
+
     if buy_a == 1:
         insurance = max(min_insurance_when_a, int(y[3]))
         max_ins = TOTAL - skill_cost - int(pile_mins.sum())
@@ -205,15 +209,9 @@ def repair_strategy(x, mins):
 
     pile_budget = TOTAL - skill_cost - insurance
     if pile_budget < int(pile_mins.sum()):
-        if buy_a == 1:
-            insurance = max(min_insurance_when_a, TOTAL - skill_cost - int(pile_mins.sum()))
-            if insurance < min_insurance_when_a:
-                buy_a = 0
-                insurance = 0
-                skill_cost = judge.skill_cost_from_flags(buy_a, buy_b, buy_c)
-            pile_budget = TOTAL - skill_cost - insurance
-        if pile_budget < int(pile_mins.sum()):
-            return judge.sample_random_strategy(np.random.default_rng(), mins)
+        if rng is None:
+            rng = np.random.default_rng()
+        return judge.sample_random_strategy(rng, mins)
 
     piles = exact_sum_repair(y[4:14], pile_budget, pile_mins)
 
@@ -224,7 +222,9 @@ def repair_strategy(x, mins):
     z[3] = insurance
     z[4:14] = piles
     if not judge.is_valid_strategy(z):
-        return judge.sample_random_strategy(np.random.default_rng(), mins)
+        if rng is None:
+            rng = np.random.default_rng()
+        return judge.sample_random_strategy(rng, mins)
     return z.astype(np.int16)
 
 
@@ -237,7 +237,6 @@ def mutate_strategy(x, rng, mins, max_step=8, moves=3):
     op = int(rng.integers(0, 5))
 
     if op == 0:
-        # pile transfer
         for _ in range(int(rng.integers(1, moves + 1))):
             i = 4 + int(rng.integers(0, K))
             j = 4 + int(rng.integers(0, K - 1))
@@ -250,13 +249,11 @@ def mutate_strategy(x, rng, mins, max_step=8, moves=3):
             y[i] -= step
             y[j] += step
     elif op == 1:
-        # toggle one skill
         idx = int(rng.integers(0, 3))
         y[idx] = 1 - int(y[idx] > 0)
         if idx == 0 and y[0] == 0:
             y[3] = 0
     elif op == 2:
-        # adjust insurance when A is on
         if int(y[0]) == 0:
             y[0] = 1
         delta = int(rng.integers(-max_step, max_step + 1))
@@ -264,27 +261,25 @@ def mutate_strategy(x, rng, mins, max_step=8, moves=3):
             delta = 1
         y[3] = max(1, int(y[3]) + delta)
     elif op == 3:
-        # resample piles around current skills
         base = random_strategy(rng, mins)
         y[4:14] = base[4:14]
     else:
-        # light jitter on all coordinates then repair
         noise = rng.integers(-2, 3, size=DIM)
         y = y + noise.astype(np.int16)
 
-    return repair_strategy(y, mins)
+    return repair_strategy(y, mins, rng=rng)
 
 
 def jitter_strategy(base, rng, mins, max_delta=3):
     base = np.asarray(base, dtype=np.int16)
     noise = rng.integers(-max_delta, max_delta + 1, size=base.shape)
-    return repair_strategy(base + noise, mins)
+    return repair_strategy(base + noise, mins, rng=rng)
 
 
 def structured_seeds(rng, mins, max_delta=3, keep_original=True, per_base=24):
     seeds = []
     for s in judge.strategies:
-        base = repair_strategy(s, mins)
+        base = repair_strategy(s, mins, rng=rng)
         if keep_original:
             seeds.append(base.copy())
         for _ in range(per_base):
@@ -352,9 +347,7 @@ def local_search(pool, x0, rng, mins, must_beat_pool=None, iters=3000,
                 continue
             seen.add(key)
 
-            wy, ty, ly, mbwy, mbty, mbly, mbtotaly = eval_candidate(
-                y, pool, must_beat_pool, prescreen_indices=prescreen_indices, full_eval=False
-            )
+            wy, ty, ly, mbwy, mbty, mbly, mbtotaly = eval_candidate(y, pool, must_beat_pool, prescreen_indices=prescreen_indices, full_eval=False)
             prescore = score_tuple(wy, ty, ly, mbwy, mbty, mbly, mbtotaly)
             heapq.heappush(prescreen_best, (prescore, key, y))
             if len(prescreen_best) > full_eval_top_k:
@@ -369,9 +362,7 @@ def local_search(pool, x0, rng, mins, must_beat_pool=None, iters=3000,
         final_score = None
         finalists = sorted(prescreen_best, key=lambda z: z[0], reverse=True)
         for _, _, y in finalists:
-            wy, ty, ly, mbwy, mbty, mbly, mbtotaly = eval_candidate(
-                y, pool, must_beat_pool, prescreen_indices=full_indices, full_eval=True
-            )
+            wy, ty, ly, mbwy, mbty, mbly, mbtotaly = eval_candidate(y, pool, must_beat_pool, prescreen_indices=full_indices, full_eval=True)
             sc = score_tuple(wy, ty, ly, mbwy, mbty, mbly, mbtotaly)
             if final_score is None or sc > final_score:
                 final_score = sc
@@ -423,7 +414,7 @@ def global_search(pool, restarts=30, iters=3000, neighborhood=40, max_step=8,
         p = rng.random()
         if p < 0.4:
             idx = int(rng.integers(0, pool.shape[0]))
-            x0 = repair_strategy(pool[idx].copy(), mins)
+            x0 = repair_strategy(pool[idx].copy(), mins, rng=rng)
             x0 = mutate_strategy(x0, rng, mins=mins, max_step=5, moves=2)
             source = 'pool'
         elif p < 0.8:
@@ -434,18 +425,10 @@ def global_search(pool, restarts=30, iters=3000, neighborhood=40, max_step=8,
             source = 'seed'
 
         x, w, t, l, mbw, mbt, mbl, mbtotal = local_search(
-            pool=pool,
-            x0=x0,
-            rng=rng,
-            mins=mins,
-            must_beat_pool=must_beat_pool,
-            iters=iters,
-            neighborhood=neighborhood,
-            max_step=max_step,
-            prescreen_size=prescreen_size,
-            full_eval_top_k=full_eval_top_k,
-            refresh_prescreen_every=refresh_prescreen_every,
-            verbose=False,
+            pool=pool, x0=x0, rng=rng, mins=mins, must_beat_pool=must_beat_pool,
+            iters=iters, neighborhood=neighborhood, max_step=max_step,
+            prescreen_size=prescreen_size, full_eval_top_k=full_eval_top_k,
+            refresh_prescreen_every=refresh_prescreen_every, verbose=False,
         )
 
         is_global_best = False
@@ -456,34 +439,20 @@ def global_search(pool, restarts=30, iters=3000, neighborhood=40, max_step=8,
             is_global_best = True
 
         restart_results.append({
-            'restart': r,
-            'source': source,
-            'wins': w,
-            'ties': t,
-            'losses': l,
-            'must_beat_wins': mbw,
-            'must_beat_ties': mbt,
-            'must_beat_losses': mbl,
-            'must_beat_total': mbtotal,
-            'must_beat_ok': (mbw == mbtotal),
-            'skill_cost': judge.strategy_skill_cost(x),
-            'used': judge.strategy_total_used(x),
-            'strategy': x.copy(),
-            'is_global_best': is_global_best,
+            'restart': r, 'source': source,
+            'wins': w, 'ties': t, 'losses': l,
+            'must_beat_wins': mbw, 'must_beat_ties': mbt, 'must_beat_losses': mbl,
+            'must_beat_total': mbtotal, 'must_beat_ok': (mbw == mbtotal),
+            'used': int(x.sum()), 'saved': int(TOTAL - int(x.sum())),
+            'strategy': x.copy(), 'is_global_best': is_global_best,
         })
 
         if verbose:
             dt = time.time() - t0
-            flag = ' <-- GLOBAL BEST' if is_global_best else ''
-            print(
-                f"[restart {r:3d}/{restarts}] src={source:<6} "
-                f"must_beat={mbw}/{mbtotal} best_this={w}/{t}/{l} "
-                f"| skill_cost={judge.strategy_skill_cost(x):2d} used={judge.strategy_total_used(x):3d} "
-                f"| global_best must_beat={global_mbw}/{global_mbtotal} {global_w}/{global_t}/{global_l} "
-                f"| x={x.tolist()} | {dt:.1f}s{flag}"
-            )
+            flag = '  <-- GLOBAL BEST' if is_global_best else ''
+            print(f"[restart {r:3d}/{restarts}] src={source:<6} must_beat={mbw}/{mbtotal} best_this={w}/{t}/{l} | used={int(x.sum()):3d} saved={TOTAL - int(x.sum()):3d} | global_best must_beat={global_mbw}/{global_mbtotal} {global_w}/{global_t}/{global_l} | x={x.tolist()} | {dt:.1f}s{flag}")
 
-    return global_best, global_w, global_t, global_l, global_mbw, global_mbt, global_mbl, global_mbtotal, restart_results, mins
+    return (global_best, global_w, global_t, global_l, global_mbw, global_mbt, global_mbl, global_mbtotal, restart_results, mins)
 
 
 def save_restart_results(path, results, best_x, best_w, best_t, best_l,
@@ -492,41 +461,26 @@ def save_restart_results(path, results, best_x, best_w, best_t, best_l,
     os.makedirs(os.path.dirname(path) or '.', exist_ok=True)
     with open(path, 'a', encoding='utf8') as f:
         f.write('=' * 80 + '\n')
-        f.write(
-            f"{time.strftime('%Y-%m-%d %H:%M:%S')} round={judge.round_no} search "
-            f"| min_values={min_values_to_text(min_values)} | pool={pool_size} "
-            f"| must_beat={must_beat_to_text(must_beat_pool)} "
-            f"| prescreen_size={args.prescreen_size} | full_eval_top_k={args.full_eval_top_k} "
-            f"| refresh_prescreen_every={args.refresh_prescreen_every}\n"
-        )
+        f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} round={judge.round_no} round15 search | min_values={min_values_to_text(min_values)} | pool={pool_size} | must_beat={must_beat_to_text(must_beat_pool)} | prescreen_size={args.prescreen_size} | full_eval_top_k={args.full_eval_top_k} | refresh_prescreen_every={args.refresh_prescreen_every}\n")
         f.write('-' * 80 + '\n')
         for item in results:
-            mark = ' <-- GLOBAL BEST' if item['is_global_best'] else ''
+            mark = '  <-- GLOBAL BEST' if item['is_global_best'] else ''
             ok = 'OK' if item['must_beat_ok'] else 'NO'
-            f.write(
-                f"restart={item['restart']:>3d} src={item['source']:<6} "
-                f"must_beat={item['must_beat_wins']}/{item['must_beat_total']}({ok}) "
-                f"wins={item['wins']} ties={item['ties']} losses={item['losses']} "
-                f"skill_cost={item['skill_cost']} used={item['used']} "
-                f"strategy={' '.join(map(str, item['strategy'].tolist()))}{mark}\n"
-            )
+            f.write(f"restart={item['restart']:>3d} src={item['source']:<6} must_beat={item['must_beat_wins']}/{item['must_beat_total']}({ok}) wins={item['wins']} ties={item['ties']} losses={item['losses']} used={item['used']} saved={item['saved']} strategy={' '.join(map(str, item['strategy'].tolist()))}{mark}\n")
         f.write('-' * 80 + '\n')
         final_ok = 'OK' if best_mbw == best_mbtotal else 'NO'
-        f.write(
-            f"FINAL BEST must_beat={best_mbw}/{best_mbtotal}({final_ok}) wins={best_w} ties={best_t} losses={best_l} "
-            f"skill_cost={judge.strategy_skill_cost(best_x)} used={judge.strategy_total_used(best_x)}\n"
-        )
+        f.write(f"FINAL BEST must_beat={best_mbw}/{best_mbtotal}({final_ok}) wins={best_w} ties={best_t} losses={best_l} used={int(best_x.sum())} saved={TOTAL - int(best_x.sum())}\n")
         f.write('BEST strategy: ' + ' '.join(map(str, best_x.tolist())) + '\n')
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--input', type=str, default=judge.name + '/top10k.npz')
-    parser.add_argument('--restarts', type=int, default=10)
+    parser.add_argument('--restarts', type=int, default=15)
     parser.add_argument('--iters', type=int, default=3000)
     parser.add_argument('--neighborhood', type=int, default=40)
     parser.add_argument('--max_step', type=int, default=8)
-    parser.add_argument('--seed', type=int, default=20260316)
+    parser.add_argument('--seed', type=int, default=202603170943)
     parser.add_argument('--save', type=str, default=judge.name + '/best_vs_top10k.txt')
     parser.add_argument('--prescreen_size', type=int, default=1024)
     parser.add_argument('--full_eval_top_k', type=int, default=4)
@@ -540,38 +494,33 @@ def main():
     print(f'NUMBA_OK={NUMBA_OK}')
     print(f'Round = {judge.round_no}')
     print(f'Loading {args.input} ...')
-    print(f'Skill costs: A={judge.SKILL_COST_A}, B={judge.SKILL_COST_B}, C={judge.SKILL_COST_C}')
     print(f'min_values = {mins.tolist()}')
     print(f'prescreen_size = {args.prescreen_size}')
     print(f'full_eval_top_k = {args.full_eval_top_k}')
     print(f'refresh_prescreen_every = {args.refresh_prescreen_every}')
-    print(f'must_beat count = {must_beat_pool.shape[0]}')
+    if must_beat_pool.shape[0] > 0:
+        print(f'must_beat count = {must_beat_pool.shape[0]}')
+        for i, row in enumerate(must_beat_pool, start=1):
+            print(f'  must_beat[{i}] = {row.tolist()}')
+    else:
+        print('must_beat count = 0')
 
     data = np.load(args.input)
     pool = data['strategies'].astype(np.int16)
     print(f'Pool size = {pool.shape[0]:,}')
 
-    best_x, best_w, best_t, best_l, best_mbw, best_mbt, best_mbl, best_mbtotal, restart_results, mins = global_search(
-        pool=pool,
-        restarts=args.restarts,
-        iters=args.iters,
-        neighborhood=args.neighborhood,
-        max_step=args.max_step,
-        seed=args.seed,
-        verbose=True,
-        min_values=mins,
-        must_beat_pool=must_beat_pool,
-        prescreen_size=args.prescreen_size,
-        full_eval_top_k=args.full_eval_top_k,
-        refresh_prescreen_every=args.refresh_prescreen_every,
+    (best_x, best_w, best_t, best_l, best_mbw, best_mbt, best_mbl, best_mbtotal, restart_results, mins) = global_search(
+        pool=pool, restarts=args.restarts, iters=args.iters, neighborhood=args.neighborhood,
+        max_step=args.max_step, seed=args.seed, verbose=True, min_values=mins,
+        must_beat_pool=must_beat_pool, prescreen_size=args.prescreen_size,
+        full_eval_top_k=args.full_eval_top_k, refresh_prescreen_every=args.refresh_prescreen_every,
         seed_jitters=args.seed_jitters,
     )
 
     print('\n=== FINAL BEST ===')
     print('min_values =', mins.tolist())
     print('strategy =', best_x.tolist())
-    print('format =', judge.format_strategy(best_x))
-    print(f'skill_cost={judge.strategy_skill_cost(best_x)}, used={judge.strategy_total_used(best_x)}')
+    print(f'used={int(best_x.sum())}, saved={TOTAL - int(best_x.sum())}')
     print(f'must_beat={best_mbw}/{best_mbtotal}')
     print(f'wins={best_w}, ties={best_t}, losses={best_l}')
     print(f'win_rate={best_w / pool.shape[0]:.4f}')

@@ -53,6 +53,134 @@ def random_composition_sum100(rng: np.random.Generator) -> np.ndarray:
     v = rng.multinomial(TOTAL, p)
     return v.astype(np.int16)
 
+def random_small_rest(total_rest: int, slots: int, rng: np.random.Generator) -> np.ndarray:
+    """
+    把 total_rest 随机分到 slots 个位置，允许为 0。
+    """
+    if total_rest <= 0:
+        return np.zeros(slots, dtype=np.int16)
+    p = rng.dirichlet(np.ones(slots))
+    v = rng.multinomial(total_rest, p)
+    return v.astype(np.int16)
+
+
+def sample_focus_9(rng: np.random.Generator) -> np.ndarray:
+    """
+    重点压 9 号堆（下标8），其他位置少量随机或0。
+    """
+    v = np.zeros(K, dtype=np.int16)
+
+    # 9号主压，建议给一个比较高的范围
+    main9 = int(rng.integers(30, 90))   # 可自己调，比如 30~45
+    remain = TOTAL - main9
+
+    rest = random_small_rest(remain, K - 1, rng)
+
+    idx_rest = 0
+    for i in range(K):
+        if i == 8:
+            v[i] = main9
+        else:
+            v[i] = rest[idx_rest]
+            idx_rest += 1
+
+    return v
+
+
+def sample_focus_10(rng: np.random.Generator) -> np.ndarray:
+    """
+    重点压 10 号堆（下标9），其他位置少量随机或0。
+    """
+    v = np.zeros(K, dtype=np.int16)
+
+    main10 = int(rng.integers(30, 90))  # 10号可以比9号更重一点
+    remain = TOTAL - main10
+
+    rest = random_small_rest(remain, K - 1, rng)
+
+    idx_rest = 0
+    for i in range(K):
+        if i == 9:
+            v[i] = main10
+        else:
+            v[i] = rest[idx_rest]
+            idx_rest += 1
+
+    return v
+
+
+def sample_focus_9_10(rng: np.random.Generator) -> np.ndarray:
+    """
+    双压 9/10，其他位置少量随机或者全0。
+    """
+    v = np.zeros(K, dtype=np.int16)
+
+    mode = int(rng.integers(0, 3))
+
+    if mode == 0:
+        # 其他全0，纯双压
+        x9 = int(rng.integers(20, 70))
+        x10 = TOTAL - x9
+        v[8] = x9
+        v[9] = x10
+        return v
+
+    elif mode == 1:
+        # 9/10 很重，其余少量随机
+        rest_total = int(rng.integers(0, 16))   # 其他位置总共 0~15
+        core_total = TOTAL - rest_total
+
+        x9 = int(rng.integers(core_total // 3, core_total * 2 // 3 + 1))
+        x10 = core_total - x9
+
+        v[8] = x9
+        v[9] = x10
+
+        rest = random_small_rest(rest_total, K - 2, rng)
+        idx_rest = 0
+        for i in range(K):
+            if i not in (8, 9):
+                v[i] = rest[idx_rest]
+                idx_rest += 1
+        return v
+
+    else:
+        # 偏10一点
+        x10 = int(rng.integers(30, 80))
+        x9 = int(rng.integers(20, TOTAL - x10 + 1))
+        rest_total = TOTAL - x9 - x10
+
+        v[8] = x9
+        v[9] = x10
+
+        if rest_total > 0:
+            rest = random_small_rest(rest_total, K - 2, rng)
+            idx_rest = 0
+            for i in range(K):
+                if i not in (8, 9):
+                    v[i] = rest[idx_rest]
+                    idx_rest += 1
+        return v
+
+def random_strategy_mixed(rng: np.random.Generator) -> np.ndarray:
+    """
+    混合随机：
+    - 普通随机
+    - 重点压9
+    - 重点压10
+    - 双压9/10
+    """
+    x = rng.random()
+
+    if x < 0.55:
+        return random_composition_sum100(rng)   # 保留大部分普通随机
+    elif x < 0.70:
+        return sample_focus_9(rng)
+    elif x < 0.85:
+        return sample_focus_10(rng)
+    else:
+        return sample_focus_9_10(rng)
+
 
 def generate_unique_strategies(N: int, seed: int, log_every: int) -> np.ndarray:
     rng = np.random.default_rng(seed)
@@ -76,7 +204,7 @@ def generate_unique_strategies(N: int, seed: int, log_every: int) -> np.ndarray:
     t0 = time.time()
 
     while i < total_n:
-        v = random_composition_sum100(rng)
+        v = random_strategy_mixed(rng)
         code = encode_vec_int(v)
         trials += 1
         if code in seen:
