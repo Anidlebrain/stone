@@ -2,6 +2,7 @@ import numpy as np
 from collections import defaultdict
 import judge15 as judge
 
+
 def analyze_npz(path: str):
     data = np.load(path)
     strategies = data["strategies"]
@@ -24,7 +25,7 @@ def analyze_npz(path: str):
 
     print(f"\n=== 分析文件: {path} ===\n")
 
-    for skill in ["000","100","010","001","110","101","011","111"]:
+    for skill in ["000", "100", "010", "001", "110", "101", "011", "111"]:
         arr = np.array(groups[skill], dtype=np.int32)
 
         if len(arr) == 0:
@@ -41,7 +42,7 @@ def analyze_npz(path: str):
         )
 
 
-path = judge.name + '/top100.npz'
+path = judge.name + '/top1k.npz'
 
 if __name__ == "__main__":
     analyze_npz(path)

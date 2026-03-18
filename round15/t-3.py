@@ -128,7 +128,8 @@ def normalize_min_values(min_values=None):
     else:
         arr = np.asarray(min_values, dtype=np.int16)
         if arr.shape != (DIM,):
-            raise ValueError(f'min_values must have shape ({DIM},), got {arr.shape}')
+            raise ValueError(
+                f'min_values must have shape ({DIM},), got {arr.shape}')
     if np.any(arr < 0):
         raise ValueError('all min_values must be >= 0')
     return arr.astype(np.int16)
@@ -147,7 +148,8 @@ def parse_must_beat(text):
             return np.zeros((0, DIM), dtype=np.int16)
         if arr.ndim == 1:
             if arr.shape[0] != DIM:
-                raise ValueError(f'each must_beat strategy must have length {DIM}')
+                raise ValueError(
+                    f'each must_beat strategy must have length {DIM}')
             arr = arr.reshape(1, DIM)
         if arr.ndim != 2 or arr.shape[1] != DIM:
             raise ValueError(f'must_beat array must have shape (n, {DIM})')
@@ -162,7 +164,8 @@ def must_beat_to_text(must_beat):
 
 
 def exact_sum_repair(values, total, mins):
-    y = np.maximum(np.asarray(values, dtype=np.int16), np.asarray(mins, dtype=np.int16)).astype(np.int16)
+    y = np.maximum(np.asarray(values, dtype=np.int16),
+                   np.asarray(mins, dtype=np.int16)).astype(np.int16)
     s = int(y.sum())
     if s < total:
         y[K - 1] += total - s
@@ -283,7 +286,8 @@ def structured_seeds(rng, mins, max_delta=3, keep_original=True, per_base=24):
         if keep_original:
             seeds.append(base.copy())
         for _ in range(per_base):
-            seeds.append(jitter_strategy(base, rng=rng, mins=mins, max_delta=max_delta))
+            seeds.append(jitter_strategy(
+                base, rng=rng, mins=mins, max_delta=max_delta))
     return seeds
 
 
@@ -320,10 +324,12 @@ def local_search(pool, x0, rng, mins, must_beat_pool=None, iters=3000,
                  neighborhood=40, max_step=8, prescreen_size=1024,
                  full_eval_top_k=4, refresh_prescreen_every=25, verbose=False):
     full_indices = None
-    prescreen_indices = pick_prescreen_indices(pool.shape[0], prescreen_size, rng)
+    prescreen_indices = pick_prescreen_indices(
+        pool.shape[0], prescreen_size, rng)
 
     x = x0.copy()
-    w, t, l, mbw, mbt, mbl, mbtotal = eval_candidate(x, pool, must_beat_pool, prescreen_indices=full_indices, full_eval=True)
+    w, t, l, mbw, mbt, mbl, mbtotal = eval_candidate(
+        x, pool, must_beat_pool, prescreen_indices=full_indices, full_eval=True)
     best_local = x.copy()
     best_w, best_t, best_l = w, t, l
     best_mbw, best_mbt, best_mbl, best_mbtotal = mbw, mbt, mbl, mbtotal
@@ -331,7 +337,8 @@ def local_search(pool, x0, rng, mins, must_beat_pool=None, iters=3000,
 
     for it in range(1, iters + 1):
         if refresh_prescreen_every > 0 and (it == 1 or it % refresh_prescreen_every == 0):
-            prescreen_indices = pick_prescreen_indices(pool.shape[0], prescreen_size, rng)
+            prescreen_indices = pick_prescreen_indices(
+                pool.shape[0], prescreen_size, rng)
 
         seen = set()
         prescreen_best = []
@@ -347,7 +354,8 @@ def local_search(pool, x0, rng, mins, must_beat_pool=None, iters=3000,
                 continue
             seen.add(key)
 
-            wy, ty, ly, mbwy, mbty, mbly, mbtotaly = eval_candidate(y, pool, must_beat_pool, prescreen_indices=prescreen_indices, full_eval=False)
+            wy, ty, ly, mbwy, mbty, mbly, mbtotaly = eval_candidate(
+                y, pool, must_beat_pool, prescreen_indices=prescreen_indices, full_eval=False)
             prescore = score_tuple(wy, ty, ly, mbwy, mbty, mbly, mbtotaly)
             heapq.heappush(prescreen_best, (prescore, key, y))
             if len(prescreen_best) > full_eval_top_k:
@@ -355,14 +363,16 @@ def local_search(pool, x0, rng, mins, must_beat_pool=None, iters=3000,
 
         if not prescreen_best:
             stall += 1
-            x = mutate_strategy(best_local, rng, mins=mins, max_step=max_step * 2, moves=6)
+            x = mutate_strategy(best_local, rng, mins=mins,
+                                max_step=max_step * 2, moves=6)
             continue
 
         final_best = None
         final_score = None
         finalists = sorted(prescreen_best, key=lambda z: z[0], reverse=True)
         for _, _, y in finalists:
-            wy, ty, ly, mbwy, mbty, mbly, mbtotaly = eval_candidate(y, pool, must_beat_pool, prescreen_indices=full_indices, full_eval=True)
+            wy, ty, ly, mbwy, mbty, mbly, mbtotaly = eval_candidate(
+                y, pool, must_beat_pool, prescreen_indices=full_indices, full_eval=True)
             sc = score_tuple(wy, ty, ly, mbwy, mbty, mbly, mbtotaly)
             if final_score is None or sc > final_score:
                 final_score = sc
@@ -380,11 +390,14 @@ def local_search(pool, x0, rng, mins, must_beat_pool=None, iters=3000,
                 best_mbw, best_mbt, best_mbl, best_mbtotal = mbw, mbt, mbl, mbtotal
         else:
             stall += 1
-            x = mutate_strategy(best_local, rng, mins=mins, max_step=max_step * 2, moves=6)
-            w, t, l, mbw, mbt, mbl, mbtotal = eval_candidate(x, pool, must_beat_pool, prescreen_indices=full_indices, full_eval=True)
+            x = mutate_strategy(best_local, rng, mins=mins,
+                                max_step=max_step * 2, moves=6)
+            w, t, l, mbw, mbt, mbl, mbtotal = eval_candidate(
+                x, pool, must_beat_pool, prescreen_indices=full_indices, full_eval=True)
 
         if verbose and (it % 200 == 0):
-            print(f'    iter={it:5d} | local_best must_beat={best_mbw}/{best_mbtotal} | wins={best_w} ties={best_t} losses={best_l} | stall={stall}')
+            print(
+                f'    iter={it:5d} | local_best must_beat={best_mbw}/{best_mbtotal} | wins={best_w} ties={best_t} losses={best_l} | stall={stall}')
 
     return best_local, best_w, best_t, best_l, best_mbw, best_mbt, best_mbl, best_mbtotal
 
@@ -469,19 +482,22 @@ def save_restart_results(path, results, best_x, best_w, best_t, best_l,
             f.write(f"restart={item['restart']:>3d} src={item['source']:<6} must_beat={item['must_beat_wins']}/{item['must_beat_total']}({ok}) wins={item['wins']} ties={item['ties']} losses={item['losses']} used={item['used']} saved={item['saved']} strategy={' '.join(map(str, item['strategy'].tolist()))}{mark}\n")
         f.write('-' * 80 + '\n')
         final_ok = 'OK' if best_mbw == best_mbtotal else 'NO'
-        f.write(f"FINAL BEST must_beat={best_mbw}/{best_mbtotal}({final_ok}) wins={best_w} ties={best_t} losses={best_l} used={int(best_x.sum())} saved={TOTAL - int(best_x.sum())}\n")
+        f.write(
+            f"FINAL BEST must_beat={best_mbw}/{best_mbtotal}({final_ok}) wins={best_w} ties={best_t} losses={best_l} used={int(best_x.sum())} saved={TOTAL - int(best_x.sum())}\n")
         f.write('BEST strategy: ' + ' '.join(map(str, best_x.tolist())) + '\n')
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input', type=str, default=judge.name + '/top10k.npz')
-    parser.add_argument('--restarts', type=int, default=15)
-    parser.add_argument('--iters', type=int, default=3000)
+    parser.add_argument('--input', type=str,
+                        default=judge.name + '/top10k.npz')
+    parser.add_argument('--restarts', type=int, default=20)
+    parser.add_argument('--iters', type=int, default=5000)
     parser.add_argument('--neighborhood', type=int, default=40)
     parser.add_argument('--max_step', type=int, default=8)
     parser.add_argument('--seed', type=int, default=202603170943)
-    parser.add_argument('--save', type=str, default=judge.name + '/best_vs_top10k.txt')
+    parser.add_argument('--save', type=str,
+                        default=judge.name + '/best_vs_top10k.txt')
     parser.add_argument('--prescreen_size', type=int, default=1024)
     parser.add_argument('--full_eval_top_k', type=int, default=4)
     parser.add_argument('--refresh_prescreen_every', type=int, default=25)

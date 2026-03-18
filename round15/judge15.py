@@ -282,11 +282,13 @@ def calculate_match_result_round15(a, b) -> int:
 
 
 calculate_match_result = calculate_match_result_round15
-is_valid_strategy = _is_valid_strategy_py if not NUMBA_OK else lambda x: bool(is_valid_strategy_nb(np.asarray(x, dtype=np.int16)))
+is_valid_strategy = _is_valid_strategy_py if not NUMBA_OK else lambda x: bool(
+    is_valid_strategy_nb(np.asarray(x, dtype=np.int16)))
 
 
 strategies15 = [
-    np.array([0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10], dtype=np.int16),
+    np.array([0, 0, 0, 0, 10, 10, 10, 10, 10, 10,
+             10, 10, 10, 10], dtype=np.int16),
     np.array([1, 0, 0, 8, 4, 4, 4, 4, 6, 8, 10, 12, 16, 22], dtype=np.int16),
     np.array([0, 1, 0, 0, 0, 0, 2, 4, 6, 8, 10, 16, 20, 24], dtype=np.int16),
     np.array([0, 0, 1, 0, 1, 1, 2, 3, 5, 7, 11, 15, 19, 24], dtype=np.int16),
@@ -294,13 +296,14 @@ strategies15 = [
     np.array([1, 1, 0, 5, 0, 0, 1, 2, 4, 8, 10, 16, 20, 22], dtype=np.int16),
     np.array([0, 1, 1, 0, 0, 1, 1, 2, 4, 6, 10, 14, 18, 22], dtype=np.int16),
 ]
-min_values15 = np.array([0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
+# min_values15 = np.array([0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
+min_values15 = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 must_beat15 = np.array([
     [0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
-    [1, 1, 0, 4, 0, 0, 0, 0, 6, 8, 13, 17, 17, 23],
-    [1, 0, 0, 5, 3, 10, 10, 10, 10, 10, 10, 10, 10, 10],
-    [1, 0, 0, 3, 0, 0, 4, 6, 8, 10, 13, 15, 18, 21],
-    # [1, 1, 0, 17, 4, 5, 6, 8, 12, 15, 21, 0, 0, 0]
+    # [1, 1, 0, 4, 0, 0, 0, 0, 6, 8, 13, 17, 17, 21],
+    # [1, 0, 0, 5, 3, 10, 10, 10, 10, 10, 10, 10, 10, 10],
+    # [1, 0, 0, 3, 0, 0, 4, 6, 8, 8, 13, 15, 18, 21],
+    # [1, 1, 0, 15, 4, 5, 6, 8, 12, 15, 21, 0, 0, 0],
 ], dtype=np.int16)
 
 strategies = [np.asarray(x, dtype=np.int16).copy() for x in strategies15]
@@ -321,27 +324,29 @@ def _feasible_combos(min_piles: np.ndarray, min_insurance_when_a: int):
                 if min_total <= START_COINS:
                     combos.append((buy_a, buy_b, buy_c, skill_cost, min_ins))
     if not combos:
-        raise ValueError('No feasible skill combination under current costs/min_values')
+        raise ValueError(
+            'No feasible skill combination under current costs/min_values')
     return combos
 
 
 def _combo_weight(buy_a: int, buy_b: int, buy_c: int) -> float:
     # 让随机池更接近“会被人提交”的组合，而不是完全均匀
     table = {
-        (0, 0, 0): 0.8,
-        (1, 0, 0): 1.1,
-        (0, 1, 0): 1.8,
-        (0, 0, 1): 1.0,
-        (1, 1, 0): 2.5,
-        (1, 0, 1): 1.2,
-        (0, 1, 1): 2.2,
-        (1, 1, 1): 0.9,
+        (0, 0, 0): 1.2,
+        (1, 0, 0): 1.0,
+        (0, 1, 0): 1.3,
+        (0, 0, 1): 0.5,
+        (1, 1, 0): 1.5,
+        (1, 0, 1): 1.0,
+        (0, 1, 1): 1.7,
+        (1, 1, 1): 1.2,
     }
     return table[(buy_a, buy_b, buy_c)]
 
 
 def _choose_combo(rng: np.random.Generator, combos):
-    w = np.array([_combo_weight(c[0], c[1], c[2]) for c in combos], dtype=np.float64)
+    w = np.array([_combo_weight(c[0], c[1], c[2])
+                 for c in combos], dtype=np.float64)
     w /= w.sum()
     idx = int(rng.choice(len(combos), p=w))
     return combos[idx]
@@ -440,10 +445,12 @@ def _sample_piles_humanized(rng: np.random.Generator, remain: int, min_piles: np
     if remain >= 20:
         for low in range(0, 4):
             if extra[low] > 0 and int(extra[:4].sum()) > low_cap:
-                take = min(int(extra[low]), int(rng.integers(0, 1 + extra[low] // 2)))
+                take = min(int(extra[low]), int(
+                    rng.integers(0, 1 + extra[low] // 2)))
                 if take > 0:
                     extra[low] -= np.int16(take)
-                    target = int(rng.choice(focus_idx if len(focus_idx) > 0 else np.arange(6, 10)))
+                    target = int(rng.choice(focus_idx if len(
+                        focus_idx) > 0 else np.arange(6, 10)))
                     extra[target] += np.int16(take)
 
     # 保证后段通常有一定厚度
@@ -464,9 +471,11 @@ def _sample_piles_humanized(rng: np.random.Generator, remain: int, min_piles: np
 
 
 def sample_random_strategy(rng: np.random.Generator, min_values=None) -> np.ndarray:
-    mins = np.zeros(STRATEGY_LEN, dtype=np.int16) if min_values is None else np.asarray(min_values, dtype=np.int16).copy()
+    mins = np.zeros(STRATEGY_LEN, dtype=np.int16) if min_values is None else np.asarray(
+        min_values, dtype=np.int16).copy()
     if mins.shape != (STRATEGY_LEN,):
-        raise ValueError(f'min_values must have shape ({STRATEGY_LEN},), got {mins.shape}')
+        raise ValueError(
+            f'min_values must have shape ({STRATEGY_LEN},), got {mins.shape}')
 
     min_piles = np.maximum(mins[IDX_PILES:IDX_PILES + K], 0).astype(np.int16)
     min_insurance_when_a = max(1, int(mins[IDX_INSURANCE]))
@@ -481,18 +490,21 @@ def sample_random_strategy(rng: np.random.Generator, min_values=None) -> np.ndar
 
     budget_after_skills = START_COINS - skill_cost
     if buy_a == 1:
-        insurance = _sample_insurance_humanized(rng, budget_after_skills, int(min_piles.sum()), min_ins)
+        insurance = _sample_insurance_humanized(
+            rng, budget_after_skills, int(min_piles.sum()), min_ins)
     else:
         insurance = 0
     x[IDX_INSURANCE] = insurance
 
     remain = START_COINS - skill_cost - insurance - int(min_piles.sum())
-    x[IDX_PILES:IDX_PILES + K] = _sample_piles_humanized(rng, remain, min_piles, buy_a, buy_b, buy_c)
+    x[IDX_PILES:IDX_PILES +
+        K] = _sample_piles_humanized(rng, remain, min_piles, buy_a, buy_b, buy_c)
 
     if not _is_valid_strategy_py(x):
         # 回退：极少数情况下直接用简单合法方案，保证不会炸
         remain = START_COINS - skill_cost - insurance - int(min_piles.sum())
-        p = rng.dirichlet(np.array([0.4, 0.4, 0.6, 0.9, 1.3, 1.8, 2.4, 3.2, 4.0, 4.8], dtype=np.float64))
+        p = rng.dirichlet(
+            np.array([0.4, 0.4, 0.6, 0.9, 1.3, 1.8, 2.4, 3.2, 4.0, 4.8], dtype=np.float64))
         extra = rng.multinomial(remain, p).astype(np.int16)
         x[IDX_PILES:IDX_PILES + K] = min_piles + extra
 
