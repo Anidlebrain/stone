@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
-import judge
+import judge15 as judge
 
-path = judge.name + '/top100.npz'
-out_csv = judge.name + '/top100.csv'
+path = judge.name + '/top10k.npz'
+out_csv = judge.name + '/top10k.csv'
 
 print(f'Round: {judge.round_no}')
 print(f'Load: {path}')

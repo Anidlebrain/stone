@@ -10,7 +10,7 @@ import time
 import heapq
 import argparse
 import numpy as np
-import judge
+import judge15 as judge
 
 try:
     from numba import njit

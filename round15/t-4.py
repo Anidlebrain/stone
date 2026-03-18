@@ -1,6 +1,6 @@
 import time
 import numpy as np
-import judge
+import judge15 as judge
 
 # 14维格式: [buyA, buyB, buyC, insurance, p1..p10]
 MY = np.array([1, 0, 1, 6, 1, 1, 2, 3, 5, 7, 9, 12, 20, 20], dtype=np.int16)
@@ -67,4 +67,10 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    a = np.array([1, 1, 0, 17, 4, 5, 6, 8, 12, 15, 21, 0, 0, 0], dtype=np.int16)
+    b = np.array([1,1,0,4,0,0,0,6,8,10,12,13,16,19], dtype=np.int16)
+    print(judge.strategy_skill_cost(a))
+    print(judge.strategy_skill_cost(b))
+    print(judge.strategy_total_used(a))
+    print(judge.strategy_total_used(b))
+    print(judge.calculate_match_result(a, b))
